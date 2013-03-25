@@ -1,0 +1,25 @@
+$ cat B.ts
+module B {
+    export var b : number = 6;
+}
+$ cat A.ts
+///<reference path="B.ts"/>
+
+module A {
+    export var a : number = 5 + B.b;
+}
+console.log("A.a = " + A.a);
+$ tsc --out out.js A.ts B.ts
+$ cat out.js
+var B;
+(function (B) {
+    B.b = 6;
+})(B || (B = {}));
+var A;
+(function (A) {
+    A.a = 5 + B.b;
+})(A || (A = {}));
+console.log("A.a = " + A.a);
+$ node out.js
+A.a = 11
+$
