@@ -1,4 +1,21 @@
 $ cat B.ts
+export var b : number = 999;
+$ cat A.ts
+import beta = module('B');
+console.log(beta.b);
+$ tsc A.ts # A will automatically compile B
+$ node A.js
+999
+$
+
+
+
+==================================
+= dumb way
+==================================
+
+
+$ cat B.ts
 module B {
     export var b : number = 6;
 }
