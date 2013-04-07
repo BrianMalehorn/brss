@@ -89,7 +89,7 @@ declare module "mongodb" {
 	}
 
 	export class ObjectID {
-		constructor (s: string);
+		constructor (s ?: string);
 	}
 
 	export interface SocketOptions {
