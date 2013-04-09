@@ -122,6 +122,7 @@ var updateItems = function(feed : DbFeed, callback ?: any) {
       db.items.find(
         {url: fpItem.link, date: fpItem.date.getTime()}).toArray(
           function(err, a) {
+            throwIt(err);
 
             var dbItem : DbItem = {
               title: fpItem.title,
@@ -132,19 +133,18 @@ var updateItems = function(feed : DbFeed, callback ?: any) {
               _id: new mongo.ObjectID()
             }
 
-            if (err) return callback(err);
             if (a.length === 0) {
               // otherwise, make a DbItem and insert it into the db
               console.log("inserting db item: " + sify(dbItem.url));
-              db.items.insert(dbItem, {safe : true}, callback);
+              db.items.insert(dbItem, {safe : true}, throwIt);
             } else if (a.length === 1) {
               console.log("db item already there: " + sify(fpItem.link));
             } else {
               console.log("removing db item: " + sify(dbItem.url));
               db.items.remove(dbItem, function(err) {
-                if (err) return callback(err);
+                throwIt(err);
                 console.log("inserting db item: " + sify(dbItem.url));
-                db.items.insert(dbItem, {safe: true}, callback);
+                db.items.insert(dbItem, {safe: true}, throwIt);
               });
             }
           });
@@ -155,12 +155,9 @@ var updateItems = function(feed : DbFeed, callback ?: any) {
    (if it's not already there) and updates all of its elements and if callback
    is given, calls it. */
 var updateFeed = function(url : string, callback ?: any) {
-<<<<<<< HEAD
-=======
   if (!callback)
     callback = throwIt;
 
->>>>>>> origin/master
   if (url.indexOf("http://") === -1) {
     url = "http://" + url;
   }
@@ -170,35 +167,16 @@ var updateFeed = function(url : string, callback ?: any) {
   console.log("update feed: " +  sify(url));
 
   db.feeds.find({url: url}).toArray(function(err, feeds : DbFeed[]) {
-<<<<<<< HEAD
-    if (err) {
-      if (callback) {
-        callback(err);
-        return;
-      } else {
-        throw err;
-      }
-    }
-=======
     if (err) return callback(err);
->>>>>>> origin/master
 
     // should never have duplicates
     assert(feeds.length <= 1, "duplicate feeds: " + sify(url));
 
-<<<<<<< HEAD
-    if (feeds.length == 0) {
-      console.log("creating db feed: " + sify(url));
-      request(url)
-        .pipe(new FeedParser({}))
-        .on('error', callback ? callback : throwIt)
-=======
     if (feeds.length === 0) {
       console.log("creating db feed: " + sify(url));
       request(url)
         .pipe(new FeedParser({}))
         .on('error', callback)
->>>>>>> origin/master
         .on('meta', function(feed : FpFeed) {
 
           var dbFeed : DbFeed = {
@@ -277,28 +255,6 @@ var updateEverything = function() : void {
       glob.isUpdating = false;
       throw err;
     }
-<<<<<<< HEAD
-=======
-
-    // count how many feeds have been updated. When this reaches
-    // dbFeeds.length, we know we're done, so release the lock
-    // on glob.isUpdating
-    var numUpdated = 0;
-    for (var i = 0; i < dbFeeds.length; i++) {
-      updateItems(dbFeeds[i], function(err) {
-        numUpdated++;
-        assert(numUpdated <= dbFeeds.length,
-               "finished updating more feeds than we started");
-        if (numUpdated === dbFeeds.length) {
-          console.log("\n*********** done updating! ***********"
-                      + "\n\n");
-          glob.isUpdating = false;
-        }
-        throwIt(err);
-      });
-    }
-  });
->>>>>>> origin/master
 
     var numUpdated = 0;
     var releaseIfFinished = function() {
@@ -332,12 +288,12 @@ var updateEverything = function() : void {
 var main = function() : void {
 
   client.open(function(err) {
-    if (err) throw err;
+    throwIt(err);
     client.collection('feeds', function(err, collection) {
-      if (err) throw err;
+      throwIt(err);
       db.feeds = collection;
       client.collection('items', function(err, collection) {
-        if (err) throw err;
+        throwIt(err);
         db.items = collection;
 
         console.log("%s: trying on %s:%d",
@@ -347,12 +303,9 @@ var main = function() : void {
                       (new Date()).toString(), ipAddress, port);
 
           // want to have stuff run every time? Put it here
-          setInterval(updateEverything, c.UPDATE_INTERVAL);
 
-<<<<<<< HEAD
+          // setInterval(updateEverything, c.UPDATE_INTERVAL);
 
-=======
->>>>>>> origin/master
         });
       });
     });
