@@ -1,0 +1,12 @@
+This has a basic server that lets you log in with Facebook via Passport. To run
+it, type
+
+    node app.js
+
+and then access
+
+    http://localhost:8000/index.html
+
+At that point, you should be able to log in with Facebook. When you log in and
+access a page, the server will detect who you're logged in as and print out all
+that information.

@@ -1,0 +1,10 @@
+This small application simply detects which way you've swiped and displays it
+on screen. You can run it by typing
+
+    node server.js
+
+and then accessing
+
+    http://localhost:8000/hammer-demo.html
+
+Then just swipe on the big red rectangle and the text should change.
