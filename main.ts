@@ -1,6 +1,7 @@
 /// <reference path="./definitely-typed/express.d.ts"/>
 /// <reference path="./definitely-typed/node.d.ts"/>
 /// <reference path="./typescript-node-definitions/mongodb.d.ts"/>
+/// <reference path="./definitions/lodash.d.ts"/>
 
 import f = module('foo');
 import fs = module('fs');
@@ -9,6 +10,7 @@ import http = module('http');
 var FeedParser = require('feedparser');
 var jsdom = require('jsdom');
 var request = require('request');
+var _ : Lodash = require('./static/lodash.js');
 import mongo = module('mongodb');
 
 var client = new mongo.Db('testDb', new mongo.Server('localhost', 27017),{w:1});
@@ -256,26 +258,18 @@ var updateEverything = function() : void {
       throw err;
     }
 
-    var numUpdated = 0;
-    var releaseIfFinished = function() {
-      assert(numUpdated <= dbFeeds.length,
-             "finished updating more feeds than we started");
-      if (numUpdated === dbFeeds.length) {
-        console.log("\n*********** done updating! ***********"
-                    + "\n\n");
-        glob.isUpdating = false;
-      }
-    };
+    var releaseIfFinished = _.after(dbFeeds.length, function() {
+      console.log("\n*********** done updating! ***********\n\n");
+      glob.isUpdating = false;
+    });
 
     // try to release it right now. If 0 feeds in db, will release
-    releaseIfFinished();
 
     // count how many feeds have been updated. When this reaches
     // dbFeeds.length, we know we're done, so release the lock
     // on glob.isUpdating
     for (var i = 0; i < dbFeeds.length; i++) {
       updateItems(dbFeeds[i], function(err) {
-        numUpdated++;
         releaseIfFinished();
         throwIt(err);
       });
@@ -304,7 +298,7 @@ var main = function() : void {
 
           // want to have stuff run every time? Put it here
 
-          // setInterval(updateEverything, c.UPDATE_INTERVAL);
+          setInterval(updateEverything, c.UPDATE_INTERVAL);
 
         });
       });
