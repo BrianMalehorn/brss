@@ -19,10 +19,17 @@ declare var updateFeed : (url : string, callback ?: Function) => void;
 /* Given a url like "http://xkcd.com/", adds the entries to the server */
 declare var addBySiteUrl : (url : string, callback ?: Function) => void;
 
+// TODO: make this not exported (i.e. remove it from here and don't
+// export it later)
+
 /* Gets the salt of the current facebookId, or generates one if it doesn't
    exist */
 declare var getSalt : (facebookId : string,
                        callback : (err : any, salt ?: string) => void) => void;
+
+/* Given a Facebook user, go look them up/create them in the database. */
+declare var getUser : (fbUser : any,
+                       callback : (err : any, dbUser ?: any) => void) => void;
 
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
@@ -33,14 +40,16 @@ declare var start : (callback ?: Function) => void;
  * imports
  ********************************************************************/
 
-import f = module('foo');
-import util = module('utilities');
-
 var FeedParser = require('feedparser');
 var jsdom = require('jsdom');
 var request = require('request');
 var _ : Lodash = require('./static/lodash.js');
+var sha1 : (s : string) => string = require('sha1');
 import mongo = module('mongodb');
+
+import f = module('foo');
+import util = module('utilities');
+
 require('source-map-support').install();
 
 
@@ -66,8 +75,19 @@ interface DbItem {
 }
 
 interface DbSalt {
-  facebookId: string;
-  salt: string;
+  facebookId : string;
+  salt : string;
+}
+
+interface DbUser {
+  fbId : string;        // '1923493'
+  displayName : string; // 'Brian Malehorn'
+  givenName : string;   // 'Brian'
+  familyName : string;  // 'Malehorn'
+  gender : string;      // 'male'
+  profileUrl : string;  // 'facebook.com/bmalehorn'
+  brssId : string;      // '8068f390040f4049ae'
+  _id : mongo.ObjectID;
 }
 
 /* When you get an item via FeedParser (Fp), it's different then when you store
@@ -85,6 +105,18 @@ interface FpItem {
   date : Date;
 }
 
+interface FbUser {
+  provider : string;             // 'facebook'
+  id : string;                   // '1923493'
+  username : string;             // 'bmalehorn'
+  displayName : string;          // 'Brian Malehorn'
+  name : {givenName : string;    // 'Brian'
+          familyName : string;}; // 'Malehorn'
+  gender : string;               // 'male'
+  profileUrl : string;           // 'facebook.com/bmalehorn'
+  emails : string;               // usually []
+}
+
 /* Data structure to hold global info. */
 interface Glob {
   isUpdating : bool;
@@ -92,13 +124,15 @@ interface Glob {
 
 interface Constants {
   UPDATE_INTERVAL : number;
+  SALT_STRING : string;
+  SALT_LENGTH : number;
 }
 
 interface Db {
   items : mongo.Collection;
   feeds : mongo.Collection;
-  users : mongo.Collection;
   salts : mongo.Collection;
+  users : mongo.Collection;
 }
 
 /********************************************************************
@@ -109,14 +143,16 @@ var glob : Glob = {isUpdating: false};
 
 var c : Constants = {
   // how often, in MS, I attempt an update
-  UPDATE_INTERVAL: 100 * 1000
+  UPDATE_INTERVAL: 100 * 1000,
+  SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
+  SALT_LENGTH: 50,
 };
 
 var db : Db = {
   items : undefined,
   feeds : undefined,
+  salts : undefined,
   users : undefined,
-  salts : undefined
 };
 
 /********************************************************************
@@ -295,27 +331,25 @@ var updateEverything = function() : void {
 
 
 /* Give me a random salt. */
-var generateSalt : () => string = (function() {
-  // closure this inside there so we don't have to reinitialize every time
-  var s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return function() : string {
-    var range = _.range(s.length);
-    var indices = _.map(range, function() { return _.random(s.length) });
-    var chars = _.at(s, indices);
-    return _.reduce(chars, function(x, y) { return x+y });
-  };
-})();
+export var generateSalt =  function() : string {
+  var s = c.SALT_STRING;
+  var n = c.SALT_LENGTH;
+  var range = _.range(n);
+  var indices = _.map(range, function() { return _.random(s.length-1) });
+  var chars = _.at(s, indices);
+  return _.reduce(chars, function(x, y) { return x+y });
+}
 
 /* What is the salt for this user? */
-export var getSalt = function(facebookId : string,
-                              callback : (err : any, salt ?: string) => any)
-                            : void {
+var getSalt = function(facebookId : string,
+                       callback : (err : any, salt ?: string) => any)
+                    : void {
    db.salts.find({facebookId: facebookId}).toArray(function(err, a : DbSalt[]) {
      if (err) return callback(err);
      util.assert(a.length <= 1,
                  "more than one salt per facebookId: " + util.sify(a));
      // if you already have the salt, just return it.
-     if (a.length == 1) return callback(null, a[0].salt);
+     if (a.length === 1) return callback(null, a[0].salt);
 
      // if you don't already have it, create it, insert it,
      // and call the callback on it
@@ -329,6 +363,42 @@ export var getSalt = function(facebookId : string,
    });
 };
 
+/* Give be the database version of this user */
+export var getUser = function(_fbUser : any,
+                              _callback : (err : any, user ?: any) => void)
+                            : void {
+  var fbUser : FbUser = _fbUser;
+  var callback : (err : any, user ?: DbUser) => void = _callback;
+
+  db.users.find({fbId: fbUser.id}).toArray(function(err, a : DbUser[]) {
+    if (err) return callback(err);
+    util.assert(a.length <= 1,
+                "more than one user per facebookId: " + util.sify(a));
+    if (a.length === 1) return callback(null, a[0]);
+
+    // guess it's not there. Get the salt for this person and stick
+    // them in the database
+    getSalt(fbUser.id, function(err, salt ?: string) {
+      if (err) return callback(err);
+
+      var dbUser : DbUser = {
+        fbId : fbUser.id,
+        displayName : fbUser.displayName,
+        givenName : fbUser.name.givenName,
+        familyName : fbUser.name.familyName,
+        gender : fbUser.gender,
+        profileUrl : fbUser.profileUrl,
+        brssId : sha1(salt + fbUser.id),
+        _id : new mongo.ObjectID(),
+      };
+
+      db.users.insert(dbUser, function(err) {
+        callback(err, dbUser);
+      });
+
+    });
+  });
+};
 
 /* The function to start it all */
 export var start = function(callback ?: Function) : void {

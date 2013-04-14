@@ -1,6 +1,7 @@
 /// <reference path="./definitely-typed/express.d.ts"/>
 /// <reference path="./definitely-typed/node.d.ts"/>
 /// <reference path="./typescript-node-definitions/mongodb.d.ts"/>
+/// <reference path="./definitions/lodash.d.ts"/>
 
 
 /* This file stores all of the server-level futzing: what urls go to what
@@ -14,6 +15,7 @@ import express = module('express');
 import http = module('http');
 var passport = require('passport');
 var sha1 : (s : string) => string = require('sha1');
+var _ : Lodash = require('./static/lodash.js');
 require('source-map-support').install();
 
 import util = module('utilities');
@@ -24,9 +26,10 @@ var app = express();
 app.configure(function() {
   app.use(express.cookieParser());
   app.use(express.methodOverride());
-  app.use(express.session({secret: "askdfakljsd"}));
+  app.use(express.session({secret: "oinwopnsdkcljasdk"}));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(express.static(__dirname + "/static"));
 });
 
 /********************************************************************
@@ -55,21 +58,16 @@ passport.use(new FacebookStrategy({
     callbackURL: "http://"+c.ipAddress+":"+c.port+"/auth/facebook/callback"
   },
   function(accessToken, refreshToken, profile, done) {
-    console.log(util.sify(profile));
     return done(null, profile);
   }));
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function(fbUser, done) {
   // user.id is something that anyone can access. Not quite a username, but
   // can still be accessed and spoofed. Therefore, create user.brssId to be
   // used on my actually application.
-
-  console.log(util.sify(user));
-
-  database.getSalt(user.id, function(err, salt ?: string) {
+  database.getUser(fbUser, function(err, dbUser ?: any) {
     util.throwIt(err);
-    user.brssId = sha1(salt + user.id);
-    done(null, user);
+    done(null, dbUser);
   });
 });
 
@@ -96,18 +94,14 @@ app.get("/auth/facebook/callback",
    for a demo.
 */
 app.get("/success.html", function(request, response) {
-  util.sify(request.user);
-  response.sendfile("success.html");
+  response.send("you win!");
+  // response.sendfile("success.html");
 });
 
 
 /********************************************************************
  * listeners
  ********************************************************************/
-
-app.get("/", function(request, response) : void {
-  response.send("Hello, world!");
-});
 
 database.start(function(err) {
   util.throwIt(err);
