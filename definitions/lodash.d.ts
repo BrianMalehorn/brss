@@ -14,7 +14,7 @@ interface Lodash {
   all : Function;
   any : Function;
   assign : Function;
-  at : Function;
+  at (a : any, indices : number[]) : any[];
   bindAll : Function;
   bind : Function;
   bindKey : Function;
@@ -82,7 +82,7 @@ interface Lodash {
   last : Function;
   lastIndexOf : Function;
   // length of array or object
-  map : Function;
+  map (a : any[], f : (x ?: any) => any) : any[];
   max : Function;
   memoize (f : Function, resolver ?: Function) : Function;
   merge : Function;
@@ -102,8 +102,8 @@ interface Lodash {
   pluck (collection : any, property : string) : any[];
   // random integer between minimum and maximum
   random (min ?: number, max ?: number) : number;
-  range : Function;
-  reduce : Function;
+  range (n : number) : number[];
+  reduce (a : any[], f : (x : any, y : any) => any) : any;
   reduceRight : Function;
   reject : Function;
   rest : Function;

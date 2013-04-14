@@ -14,14 +14,19 @@
 /* Given a url like "http://xkcd.com/rss.xml", adds the the feed to the server
    (if it's not already there) and updates all of its elements and if callback
    is given, calls it. */
-declare export var updateFeed : (url : string, callback ?: Function) => void;
+declare var updateFeed : (url : string, callback ?: Function) => void;
 
 /* Given a url like "http://xkcd.com/", adds the entries to the server */
-declare export var addBySiteUrl : (url : string, callback ?: Function) => void;
+declare var addBySiteUrl : (url : string, callback ?: Function) => void;
+
+/* Gets the salt of the current facebookId, or generates one if it doesn't
+   exist */
+declare var getSalt : (facebookId : string,
+                       callback : (err : any, salt ?: string) => void) => void;
 
 /* Start the actual server (boot up the database and set the timeout on
- * updating the database */
-declare export var start : (callback ?: Function) => void;
+   updating the database */
+declare var start : (callback ?: Function) => void;
 
 
 /********************************************************************
@@ -36,6 +41,7 @@ var jsdom = require('jsdom');
 var request = require('request');
 var _ : Lodash = require('./static/lodash.js');
 import mongo = module('mongodb');
+require('source-map-support').install();
 
 
 /********************************************************************
@@ -57,6 +63,11 @@ interface DbItem {
   date : number;
   feedId : mongo.ObjectID;
   _id : mongo.ObjectID;
+}
+
+interface DbSalt {
+  facebookId: string;
+  salt: string;
 }
 
 /* When you get an item via FeedParser (Fp), it's different then when you store
@@ -86,6 +97,8 @@ interface Constants {
 interface Db {
   items : mongo.Collection;
   feeds : mongo.Collection;
+  users : mongo.Collection;
+  salts : mongo.Collection;
 }
 
 /********************************************************************
@@ -96,11 +109,15 @@ var glob : Glob = {isUpdating: false};
 
 var c : Constants = {
   // how often, in MS, I attempt an update
-  UPDATE_INTERVAL: 10 * 1000
+  UPDATE_INTERVAL: 100 * 1000
 };
 
-var db : Db = {items : undefined,
-               feeds : undefined};
+var db : Db = {
+  items : undefined,
+  feeds : undefined,
+  users : undefined,
+  salts : undefined
+};
 
 /********************************************************************
  * actual code
@@ -158,7 +175,7 @@ var updateItems = function(feed : DbFeed, callback ?: Function) {
 /* Given a url like "http://xkcd.com/rss.xml", adds the the feed to the server
    (if it's not already there) and updates all of its elements and if callback
    is given, calls it. */
-var updateFeed = function(url : string, callback ?: Function) {
+export var updateFeed = function(url : string, callback ?: Function) {
   if (!callback)
     callback = util.throwIt;
 
@@ -204,7 +221,7 @@ var updateFeed = function(url : string, callback ?: Function) {
 
 /* Given a url like "http://xkcd.com/", adds the entries to the
    server */
-var addBySiteUrl = function(url : string, callback ?: Function) : void {
+export var addBySiteUrl = function(url : string, callback ?: Function) : void {
 
   if (!callback) {
     callback = util.throwIt;
@@ -277,28 +294,68 @@ var updateEverything = function() : void {
 };
 
 
-/* The function to start it all */
-var start = function(callback ?: Function) : void {
-  if (!callback) callback = util.throwIt;
+/* Give me a random salt. */
+var generateSalt : () => string = (function() {
+  // closure this inside there so we don't have to reinitialize every time
+  var s = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return function() : string {
+    var range = _.range(s.length);
+    var indices = _.map(range, function() { return _.random(s.length) });
+    var chars = _.at(s, indices);
+    return _.reduce(chars, function(x, y) { return x+y });
+  };
+})();
 
+/* What is the salt for this user? */
+export var getSalt = function(facebookId : string,
+                              callback : (err : any, salt ?: string) => any)
+                            : void {
+   db.salts.find({facebookId: facebookId}).toArray(function(err, a : DbSalt[]) {
+     if (err) return callback(err);
+     util.assert(a.length <= 1,
+                 "more than one salt per facebookId: " + util.sify(a));
+     // if you already have the salt, just return it.
+     if (a.length == 1) return callback(null, a[0].salt);
+
+     // if you don't already have it, create it, insert it,
+     // and call the callback on it
+     var newEntry : DbSalt = {
+       facebookId: facebookId,
+       salt: generateSalt()
+     };
+     db.salts.insert(newEntry, function(err) {
+       callback(err, newEntry.salt);
+     });
+   });
+};
+
+
+/* The function to start it all */
+export var start = function(callback ?: Function) : void {
+  if (!callback) callback = util.throwIt;
   var client = new mongo.Db('testDb',
                             new mongo.Server('localhost', 27017),{w:1});
 
   client.open(function(err) {
     if (err) return callback(err);
-    client.collection('feeds', function(err, collection) {
-      if (err) return callback(err);
-      db.feeds = collection;
-      client.collection('items', function(err, collection) {
-        if (err) return callback(err);
-        db.items = collection;
 
-        // want to have stuff run every time? Put it here
-        setInterval(updateEverything, c.UPDATE_INTERVAL);
-
-        callback(null);
-
-      });
+    // when you're done, call this function
+    var after = _.after(_.size(db), function() {
+      setInterval(updateEverything, c.UPDATE_INTERVAL);
+      callback(null);
     });
+
+    // add all the collections to the server
+    var keys : string[] = _.keys(db);
+    for (var i : number = 0; i < keys.length; i++) {
+      (function() {
+        var key = keys[i];
+        client.collection(key, function(err, collection) {
+          util.throwIt(err);
+          db[key] = collection;
+          after();
+        });
+      })();
+    }
   });
 };
