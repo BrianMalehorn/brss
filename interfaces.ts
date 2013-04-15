@@ -1,3 +1,5 @@
+/// <reference path="./typescript-node-definitions/mongodb.d.ts"/>
+
 /* This file contains all the interfaces you'll need between different
  * files. Usage:
 

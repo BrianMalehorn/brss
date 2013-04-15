@@ -30,6 +30,7 @@ app.configure(function() {
   app.use(express.session({secret: "oinwopnsdkcljasdk"}));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(express.bodyParser());
   app.use(express.static(__dirname + "/static"));
 });
 
@@ -101,6 +102,27 @@ app.get("/auth/facebook/callback",
  * listeners
  ********************************************************************/
 
+app.get("/gimmie-my-feeds", function(request, response) {
+  var user : I.DbUser = request.user;
+  database.getUserFeeds(user, function(err, feeds ?: I.DbFeed[]) {
+    util.throwIt(err);
+    response.send(JSON.stringify(feeds));
+  });
+});
+
+// app.post("/projects", function(request, response){
+//   var newProject = request.body.project;
+//   console.log(util.sify(newProject));
+// });
+
+
+
+app.post("/add-feed", function(request, response) {
+  var user : I.DbUser = request.user;
+  var url : string = request.body.url;
+  console.log(util.sify(url));
+  response.send({"foo": 5, "bar": 6});
+});
 
 /********************************************************************
  * start!

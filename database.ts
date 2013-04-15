@@ -24,6 +24,11 @@ declare var getUser : (fbUser : I.FbUser,
                        callback : (err : any, dbUser ?: I.DbUser) => void)
                       => void;
 
+/* Given a user, give me an array of all of their feeds. */
+declare var getUserFeeds : (user : I.DbUser,
+                            callback : (err : any, feeds ?: I.DbFeed[]) => void)
+                      => void;
+
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
 declare var start : (callback ?: Function) => void;
@@ -77,7 +82,7 @@ var glob : Glob = {isUpdating: false};
 
 var c : Constants = {
   // how often, in MS, I attempt an update
-  // FINALLY: set to something smaller like 60 * 1000
+  // END: set to something smaller, like 60 * 1000
   UPDATE_INTERVAL: 1000000 * 1000,
   SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
   SALT_LENGTH: 50,
@@ -335,6 +340,15 @@ export var getUser = function(fbUser : I.FbUser,
     });
   });
 };
+
+
+export var getUserFeeds = function(user : I.DbUser,
+                                   callback : (err : any,
+                                               feeds ?: I.DbFeed[]) => void)
+: void {
+  db.feeds.find({"_id": {$in: user.feedIds}}).toArray(callback);
+};
+
 
 /* The function to start it all */
 export var start = function(callback ?: Function) : void {
