@@ -9,6 +9,14 @@ export var sify = function(obj : any) : string {
   return JSON.stringify(obj, null, "\t");
 };
 
+/* Pretty-print this object */
+export var pp = function(obj, name ?: string) {
+  if (name)
+    console.log(name + " = " + sify(obj));
+  else
+    console.log(sify(obj));
+};
+
 export var assert = function(cond : bool, msg ?: string) : void {
   if (!msg) {
     msg = "assertion error";

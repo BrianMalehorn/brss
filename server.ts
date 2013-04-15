@@ -69,12 +69,12 @@ passport.serializeUser(function(fbUser : I.FbUser, done : Function) {
   // used on my actually application.
   database.getUser(fbUser, function(err, dbUser ?: I.DbUser) {
     util.throwIt(err);
-    done(null, dbUser);
+    done(null, dbUser.brssId);
   });
 });
 
-passport.deserializeUser(function(user, done) {
-  done(null, user);
+passport.deserializeUser(function(brssId, done) {
+  done(null, brssId);
 });
 
 app.get("/auth/facebook", passport.authenticate('facebook'));
@@ -102,26 +102,26 @@ app.get("/auth/facebook/callback",
  * listeners
  ********************************************************************/
 
+/* Find the current user's feeds and send them back */
 app.get("/gimmie-my-feeds", function(request, response) {
-  var user : I.DbUser = request.user;
-  database.getUserFeeds(user, function(err, feeds ?: I.DbFeed[]) {
+  var brssId : string = request.user;
+  database.getUserFeeds(brssId, function(err, feeds ?: I.DbFeed[]) {
     util.throwIt(err);
     response.send(JSON.stringify(feeds));
   });
 });
 
-// app.post("/projects", function(request, response){
-//   var newProject = request.body.project;
-//   console.log(util.sify(newProject));
-// });
 
-
-
+/* Find all feeds at the given url, add them to the current user, and send
+   the found feeds back to the user. */
 app.post("/add-feed", function(request, response) {
-  var user : I.DbUser = request.user;
+  var brssId : string = request.user;
   var url : string = request.body.url;
-  console.log(util.sify(url));
-  response.send({"foo": 5, "bar": 6});
+  util.pp(url, "url");
+  database.addUserFeeds(url, brssId, function(err, feeds ?: I.DbFeed[]) {
+    util.throwIt(err);
+    response.send(JSON.stringify(feeds));
+  });
 });
 
 /********************************************************************

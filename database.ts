@@ -11,13 +11,10 @@
  * exported functions
  ********************************************************************/
 
-/* Given a url like "http://xkcd.com/rss.xml", adds the the feed to the server
-   (if it's not already there) and updates all of its elements and if callback
-   is given, calls it. */
-declare var updateFeed : (url : string, callback ?: Function) => void;
-
 /* Given a url like "http://xkcd.com/", adds the entries to the server */
-declare var addBySiteUrl : (url : string, callback ?: Function) => void;
+declare var addBySiteUrl : (url : string,
+                            callback ?: (err, feeds ?: I.DbFeed[]) => void)
+                          => void;
 
 /* Given a Facebook user, go look them up/create them in the database. */
 declare var getUser : (fbUser : I.FbUser,
@@ -25,8 +22,14 @@ declare var getUser : (fbUser : I.FbUser,
                       => void;
 
 /* Given a user, give me an array of all of their feeds. */
-declare var getUserFeeds : (user : I.DbUser,
+declare var getUserFeeds : (brssId : string,
                             callback : (err : any, feeds ?: I.DbFeed[]) => void)
+                      => void;
+
+/* Given a url, adds all the feeds at that url to the user and calls the
+   callback with those feeds. */
+declare var addUserFeeds : (url : string, brssId : string,
+                            callback : (err, feed ?: I.DbFeed[]) => void)
                       => void;
 
 /* Start the actual server (boot up the database and set the timeout on
@@ -151,9 +154,9 @@ var updateItems = function(feed : I.DbFeed, callback ?: Function) {
 /* Given a url like "http://xkcd.com/rss.xml", adds the the feed to the server
    (if it's not already there) and updates all of its elements and if callback
    is given, calls it. */
-export var updateFeed = function(url : string, callback ?: Function) {
-  if (!callback)
-    callback = util.throwIt;
+var updateFeed = function(url : string,
+                          callback ?: (err, feed ?: I.DbFeed) => void) {
+  if (!callback) callback = util.throwIt;
 
   if (url.indexOf("http://") === -1) {
     url = "http://" + url;
@@ -169,6 +172,7 @@ export var updateFeed = function(url : string, callback ?: Function) {
     // should never have duplicates
     util.assert(feeds.length <= 1, "duplicate feeds: " + util.sify(url));
 
+    // if it's not there, make it!
     if (feeds.length === 0) {
       console.log("creating db feed: " + util.sify(url));
       request(url)
@@ -180,16 +184,24 @@ export var updateFeed = function(url : string, callback ?: Function) {
             title: feed.title,
             description: feed.description,
             url: url,
-            _id: new mongo.ObjectID()
+            _id: new mongo.ObjectID(),
           };
 
+          // insert it...
           db.feeds.insert(dbFeed, function(err) {
-            if (err) throw err;
-            updateItems(dbFeed, callback);
+            util.throwIt(err);
+            // and update all the items. You can call callback when you're done
+            updateItems(dbFeed, function(err) {
+              if (err) return callback(err);
+              callback(null, dbFeed);
+            });
           });
         });
     } else {
-      updateItems(feeds[0], callback);
+      // otherwise, it's already there, so just update it
+      updateItems(feeds[0], function(err) {
+        callback(err, feeds[0]);
+      });
     }
   });
 };
@@ -197,8 +209,9 @@ export var updateFeed = function(url : string, callback ?: Function) {
 
 /* Given a url like "http://xkcd.com/", adds the entries to the
    server */
-export var addBySiteUrl = function(url : string, callback ?: Function) : void {
-
+export var addBySiteUrl = function(url : string,
+                                   callback ?: (err, feeds ?: I.DbFeed[])
+                                   => void) : void {
   if (!callback) {
     callback = util.throwIt;
   }
@@ -219,13 +232,42 @@ export var addBySiteUrl = function(url : string, callback ?: Function) : void {
       if (err) return callback(err);
       // get out the url of the rss
       var $ = window.jQuery;
-      // TODO: insert all of the values
-      var rssUrl : string = $("link[type='application/rss+xml']")[0].href;
-      // if it doesn't start with "http://", prepend the url to the rssUrl
-      if (rssUrl.indexOf("http://") != 0) {
-        rssUrl = url + "/" + rssUrl;
+
+      var jqFeeds = $("link[type='application/rss+xml']");
+      var rssUrls : string[] = _.pluck(jqFeeds, 'href');
+      var prependHttp = function(s : string) {
+        // if it doesn't start with "http://", prepend the url to the rssUrl
+        if (s.indexOf("http://") != 0)
+          return url + "/" + s;
+        return s;
+      };
+      rssUrls = _.map(rssUrls, prependHttp);
+      // rssUrls = ["http://xkcd.com/rss.xml", ...]
+
+      // this will be filled with rssUrls.length feeds
+      var feeds : I.DbFeed[] = [];
+
+      // when you're finally done, call callback
+      var lastly = _.after(rssUrls.length, function() {
+        callback(null, feeds);
+      });
+
+      // TODO: if the feed already exist, don't bother updating it
+
+      // get each rss, inserting each one into feeds
+      for (var i = 0; i < rssUrls.length; i++) {
+        (function() {
+          var j = i;
+          updateFeed(rssUrls[j], function(err, feed ?: I.DbFeed) {
+            if (err) return callback(err);
+            feeds[j] = feed;
+            lastly();
+          });
+        })();
       }
-      updateFeed(rssUrl, callback);
+
+      // var rssUrl : string = $("link[type='application/rss+xml']")[0].href;
+      // updateFeed(rssUrl, callback);
     });
   });
 };
@@ -342,11 +384,48 @@ export var getUser = function(fbUser : I.FbUser,
 };
 
 
-export var getUserFeeds = function(user : I.DbUser,
+export var getUserFeeds = function(brssId : string,
                                    callback : (err : any,
                                                feeds ?: I.DbFeed[]) => void)
 : void {
-  db.feeds.find({"_id": {$in: user.feedIds}}).toArray(callback);
+  db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
+    if (err) return callback(err);
+
+    // var feedIds = _.map(user.feedIds, function(objId : mongo.ObjectID) {
+    //   return objId.toString();
+    // });
+    // util.pp(feedIds, 'feedIds');
+
+    db.feeds.find({_id: {$in: user.feedIds}}).toArray(callback);
+  });
+};
+
+export var addUserFeeds = function(url : string, brssId : string,
+                                   callback : (err, feeds ?: I.DbFeed[]) => void
+) : void {
+  db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
+    if (err) return callback(err);
+    // TODO: figure out how to remove exports
+    exports.addBySiteUrl(url, function(err, feeds ?: I.DbFeed[]) {
+      if (err) return callback(err);
+      // make a new version of the user, add on the new feeds,
+      // and add it back
+
+      // it's important to do a non-deep clone, or else it will mess up
+      // mongo.ObjectID
+      var newUser : I.DbUser = _.clone(user);
+      var newIds = _.pluck(feeds, '_id');
+      util.pp(newIds, 'newIds');
+      util.pp(user.feedIds, 'user.feedIds');
+      newUser.feedIds = _.union(user.feedIds, newIds);
+      db.users.update({brssId: user.brssId}, newUser, function(err) {
+        util.pp(user, "user");
+        util.pp(newUser, "newUser");
+        util.pp(feeds, "feeds");
+        callback(err, feeds);
+      });
+    });
+  });
 };
 
 
