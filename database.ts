@@ -19,17 +19,10 @@ declare var updateFeed : (url : string, callback ?: Function) => void;
 /* Given a url like "http://xkcd.com/", adds the entries to the server */
 declare var addBySiteUrl : (url : string, callback ?: Function) => void;
 
-// TODO: make this not exported (i.e. remove it from here and don't
-// export it later)
-
-/* Gets the salt of the current facebookId, or generates one if it doesn't
-   exist */
-declare var getSalt : (facebookId : string,
-                       callback : (err : any, salt ?: string) => void) => void;
-
 /* Given a Facebook user, go look them up/create them in the database. */
-declare var getUser : (fbUser : any,
-                       callback : (err : any, dbUser ?: any) => void) => void;
+declare var getUser : (fbUser : I.FbUser,
+                       callback : (err : any, dbUser ?: I.DbUser) => void)
+                      => void;
 
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
@@ -49,6 +42,7 @@ import mongo = module('mongodb');
 
 import f = module('foo');
 import util = module('utilities');
+import I = module('interfaces');
 
 require('source-map-support').install();
 
@@ -56,66 +50,6 @@ require('source-map-support').install();
 /********************************************************************
  * interfaces
  ********************************************************************/
-
-/* Items and feeds stored in the database */
-interface DbFeed {
-  title : string;
-  description : string;
-  url : string;
-  _id : mongo.ObjectID;
-}
-
-interface DbItem {
-  title : string;
-  description : string;
-  url : string;
-  date : number;
-  feedId : mongo.ObjectID;
-  _id : mongo.ObjectID;
-}
-
-interface DbSalt {
-  facebookId : string;
-  salt : string;
-}
-
-interface DbUser {
-  fbId : string;        // '1923493'
-  displayName : string; // 'Brian Malehorn'
-  givenName : string;   // 'Brian'
-  familyName : string;  // 'Malehorn'
-  gender : string;      // 'male'
-  profileUrl : string;  // 'facebook.com/bmalehorn'
-  brssId : string;      // '8068f390040f4049ae'
-  _id : mongo.ObjectID;
-}
-
-/* When you get an item via FeedParser (Fp), it's different then when you store
-   it in the database. Thus, it's useful to have these distinctions. */
-interface FpFeed {
-  description : string;
-  title : string;
-  link : string;
-}
-
-interface FpItem {
-  title : string;
-  description : string;
-  link : string;
-  date : Date;
-}
-
-interface FbUser {
-  provider : string;             // 'facebook'
-  id : string;                   // '1923493'
-  username : string;             // 'bmalehorn'
-  displayName : string;          // 'Brian Malehorn'
-  name : {givenName : string;    // 'Brian'
-          familyName : string;}; // 'Malehorn'
-  gender : string;               // 'male'
-  profileUrl : string;           // 'facebook.com/bmalehorn'
-  emails : string;               // usually []
-}
 
 /* Data structure to hold global info. */
 interface Glob {
@@ -143,7 +77,8 @@ var glob : Glob = {isUpdating: false};
 
 var c : Constants = {
   // how often, in MS, I attempt an update
-  UPDATE_INTERVAL: 100 * 1000,
+  // FINALLY: set to something smaller like 60 * 1000
+  UPDATE_INTERVAL: 1000000 * 1000,
   SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
   SALT_LENGTH: 50,
 };
@@ -160,7 +95,7 @@ var db : Db = {
  ********************************************************************/
 
 /* Given a pre-existing feed, update all of its items */
-var updateItems = function(feed : DbFeed, callback ?: Function) {
+var updateItems = function(feed : I.DbFeed, callback ?: Function) {
   console.log("update items: " + util.sify(feed.url));
   if (!callback) callback = util.throwIt;
 
@@ -168,7 +103,7 @@ var updateItems = function(feed : DbFeed, callback ?: Function) {
     .pipe(new FeedParser({}))
     .on('error', callback)
     .on('end', callback)
-    .on('article', function(fpItem : FpItem) {
+    .on('article', function(fpItem : I.FpItem) {
       // If they didn't put a date, shame on them.
       // Give it the current date.
       if (!fpItem.date) {
@@ -181,7 +116,7 @@ var updateItems = function(feed : DbFeed, callback ?: Function) {
           function(err, a) {
             util.throwIt(err);
 
-            var dbItem : DbItem = {
+            var dbItem : I.DbItem = {
               title: fpItem.title,
               description: fpItem.description,
               url: fpItem.link,
@@ -191,7 +126,7 @@ var updateItems = function(feed : DbFeed, callback ?: Function) {
             }
 
             if (a.length === 0) {
-              // otherwise, make a DbItem and insert it into the db
+              // otherwise, make a I.DbItem and insert it into the db
               console.log("inserting db item: " + util.sify(dbItem.url));
               db.items.insert(dbItem, {safe : true}, util.throwIt);
             } else if (a.length === 1) {
@@ -223,7 +158,7 @@ export var updateFeed = function(url : string, callback ?: Function) {
   url = url.replace("http:/", "http://");
   console.log("update feed: " +  util.sify(url));
 
-  db.feeds.find({url: url}).toArray(function(err, feeds : DbFeed[]) {
+  db.feeds.find({url: url}).toArray(function(err, feeds : I.DbFeed[]) {
     if (err) return callback(err);
 
     // should never have duplicates
@@ -234,9 +169,9 @@ export var updateFeed = function(url : string, callback ?: Function) {
       request(url)
         .pipe(new FeedParser({}))
         .on('error', callback)
-        .on('meta', function(feed : FpFeed) {
+        .on('meta', function(feed : I.FpFeed) {
 
-          var dbFeed : DbFeed = {
+          var dbFeed : I.DbFeed = {
             title: feed.title,
             description: feed.description,
             url: url,
@@ -306,7 +241,7 @@ var updateEverything = function() : void {
   glob.isUpdating = true;
 
   // get all the feeds, and then look them up
-  db.feeds.find({}).toArray(function(err, dbFeeds : DbFeed[]) {
+  db.feeds.find({}).toArray(function(err, dbFeeds : I.DbFeed[]) {
     if (err) {
       glob.isUpdating = false;
       throw err;
@@ -344,7 +279,7 @@ export var generateSalt =  function() : string {
 var getSalt = function(facebookId : string,
                        callback : (err : any, salt ?: string) => any)
                     : void {
-   db.salts.find({facebookId: facebookId}).toArray(function(err, a : DbSalt[]) {
+   db.salts.find({facebookId: facebookId}).toArray(function(err, a : I.DbSalt[]) {
      if (err) return callback(err);
      util.assert(a.length <= 1,
                  "more than one salt per facebookId: " + util.sify(a));
@@ -353,7 +288,7 @@ var getSalt = function(facebookId : string,
 
      // if you don't already have it, create it, insert it,
      // and call the callback on it
-     var newEntry : DbSalt = {
+     var newEntry : I.DbSalt = {
        facebookId: facebookId,
        salt: generateSalt()
      };
@@ -364,13 +299,13 @@ var getSalt = function(facebookId : string,
 };
 
 /* Give be the database version of this user */
-export var getUser = function(_fbUser : any,
-                              _callback : (err : any, user ?: any) => void)
+export var getUser = function(fbUser : I.FbUser,
+                              callback : (err : any, user ?: I.DbUser) => void)
                             : void {
-  var fbUser : FbUser = _fbUser;
-  var callback : (err : any, user ?: DbUser) => void = _callback;
+  // var fbUser : I.FbUser = _fbUser;
+  // var callback : (err : any, user ?: I.DbUser) => void = _callback;
 
-  db.users.find({fbId: fbUser.id}).toArray(function(err, a : DbUser[]) {
+  db.users.find({fbId: fbUser.id}).toArray(function(err, a : I.DbUser[]) {
     if (err) return callback(err);
     util.assert(a.length <= 1,
                 "more than one user per facebookId: " + util.sify(a));
@@ -381,15 +316,16 @@ export var getUser = function(_fbUser : any,
     getSalt(fbUser.id, function(err, salt ?: string) {
       if (err) return callback(err);
 
-      var dbUser : DbUser = {
-        fbId : fbUser.id,
-        displayName : fbUser.displayName,
-        givenName : fbUser.name.givenName,
-        familyName : fbUser.name.familyName,
-        gender : fbUser.gender,
-        profileUrl : fbUser.profileUrl,
-        brssId : sha1(salt + fbUser.id),
-        _id : new mongo.ObjectID(),
+      var dbUser : I.DbUser = {
+        fbId: fbUser.id,
+        displayName: fbUser.displayName,
+        givenName: fbUser.name.givenName,
+        familyName: fbUser.name.familyName,
+        gender: fbUser.gender,
+        profileUrl: fbUser.profileUrl,
+        brssId: sha1(salt + fbUser.id),
+        _id: new mongo.ObjectID(),
+        feedIds: [],
       };
 
       db.users.insert(dbUser, function(err) {

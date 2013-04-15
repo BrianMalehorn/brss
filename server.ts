@@ -20,6 +20,7 @@ require('source-map-support').install();
 
 import util = module('utilities');
 import database = module('database');
+import I = module('interfaces');
 
 var app = express();
 
@@ -61,11 +62,11 @@ passport.use(new FacebookStrategy({
     return done(null, profile);
   }));
 
-passport.serializeUser(function(fbUser, done) {
+passport.serializeUser(function(fbUser : I.FbUser, done : Function) {
   // user.id is something that anyone can access. Not quite a username, but
   // can still be accessed and spoofed. Therefore, create user.brssId to be
   // used on my actually application.
-  database.getUser(fbUser, function(err, dbUser ?: any) {
+  database.getUser(fbUser, function(err, dbUser ?: I.DbUser) {
     util.throwIt(err);
     done(null, dbUser);
   });
@@ -79,7 +80,7 @@ app.get("/auth/facebook", passport.authenticate('facebook'));
 
 app.get("/auth/facebook/callback",
         passport.authenticate('facebook', {
-          successRedirect: "/success.html",
+          successRedirect: "/view.html",
           failureRedirect: "/index.html"
         }));
 
@@ -88,19 +89,21 @@ app.get("/auth/facebook/callback",
    file). But if I wanted, I could look up request.user.brssId in a database
    where I store all the secure information and send it back. The only way it
    could be spoofed is if they knew my salt.
-
-   I could make this even more secure by generating a random salt for each user
-   and storing each one in the database, but that seems like a lot of effort
-   for a demo.
 */
-app.get("/success.html", function(request, response) {
-  response.send("you win!");
-  // response.sendfile("success.html");
-});
+
+// app.get("/success.html", function(request, response) {
+//   response.send("you win!");
+//   // response.sendfile("success.html");
+// });
 
 
 /********************************************************************
  * listeners
+ ********************************************************************/
+
+
+/********************************************************************
+ * start!
  ********************************************************************/
 
 database.start(function(err) {
