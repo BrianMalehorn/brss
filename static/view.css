@@ -1,6 +1,35 @@
+body {
+    text-shadow: 0 0.05em 0.05em black;
+    background-color: 363636;
+    text-align: center;
+    font-size: 24px;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    color: white;
+    padding: 1em;
+}
+
+div {
+    padding-top: 0.7em;
+    padding-bottom: 0.7em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+
 .button {
-    height: 50px;
-    background-color: blue;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    background-color: #575757;
+}
+
+.subscription {
+    padding-top: 0.7em;
+    padding-bottom: 0.7em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    background-color: #828282;
 }
 
 /* Initially, these should all not display */
@@ -8,10 +37,36 @@
     display: none;
 }
 
+.itemContainer {
+    font-family: Georgia, serif;
+    background-color: dedede; /* lol, king dedede */
+    color: black;
+    text-shadow: 0 0 0 black;
+    padding: 0.6em;
+    margin-bottom: 0.5em;
+}
+
+h3 {
+    font-size: 100%;
+}
+
+.itemDescription {
+    text-shadow: 0 0 0 black;
+    text-align: left;
+    font-size: 60%;
+}
+
+p {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+}
+
 .keeper {
-    background-color: pink;
+    background-color: #4d66ab;
+    /* background-color: pink; */
 }
 
 .bad {
-    background-color: yellow;
+    background-color: #ab4d53;
+    /* background-color: yellow; */
 }

@@ -222,7 +222,10 @@ $(document).ready(function() {
           var item = items[i];
           var div = $("<div>")
             .append($("<h3>")
-                    .text(item.title))
+                    .append($("<a>")
+                            .attr('href', item.url)
+                            .attr('target', '_blank')
+                            .text(item.title)))
             .append($("<div>")
                     .html(item.description)
                     .addClass('itemDescription'))
@@ -231,6 +234,12 @@ $(document).ready(function() {
           $("#read").prepend(div);
         }
         $("#read").css('display', 'block');
+        var back = $("<div>").addClass("button").text("back");
+        Hammer(back[0]).on('tap', function(event) {
+          $("#read").css('display', 'none');
+          switchToView();
+        });
+        $("#read").prepend(back)
         callback();
       }
     });

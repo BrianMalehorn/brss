@@ -473,7 +473,7 @@ export var getSomeItems = function(feedId : string,
                                    callback : (err, items ?: I.DbItem[]) =>void)
 : void {
   db.items.find({feedId: new mongo.ObjectID(feedId)})
-    .sort({date: -1})
+    .sort({date: 1})
     .limit(10)
     .toArray(callback);
 };
