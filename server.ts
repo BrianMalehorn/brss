@@ -67,7 +67,7 @@ passport.serializeUser(function(fbUser : I.FbUser, done : Function) {
   // user.id is something that anyone can access. Not quite a username, but
   // can still be accessed and spoofed. Therefore, create user.brssId to be
   // used on my actually application.
-  database.getUser(fbUser, function(err, dbUser ?: I.DbUser) {
+  database.getFbUser(fbUser, function(err, dbUser ?: I.DbUser) {
     util.throwIt(err);
     done(null, dbUser.brssId);
   });
@@ -96,6 +96,23 @@ app.get("/gimmie-my-feeds", function(request, response) {
   database.getUserFeeds(brssId, function(err, feeds ?: I.DbFeed[]) {
     util.throwIt(err);
     response.send(JSON.stringify(feeds));
+  });
+});
+
+app.get("/who-am-i-where-am-i", function(request, response) {
+  var brssId : string = request.user;
+  database.getUser(brssId, function(err, user ?: I.DbUser) {
+    util.throwIt(err);
+    response.send(JSON.stringify(user));
+  });
+});
+
+
+app.get("/gimmie-some-items", function(request, response) {
+  var feedId : string = request.query.feedId;
+  database.getSomeItems(feedId, function(err, items ?: I.DbItem[]) {
+    util.throwIt(err);
+    response.send(JSON.stringify(items));
   });
 });
 

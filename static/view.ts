@@ -3,16 +3,18 @@
 
 declare var _ : Lodash;
 import I = module('../interfaces');
-// TODO: make it at least a little typesafe
+// TODO: make Hammer at least a little typesafe
 declare var Hammer : any;
 
 /* The global state */
 interface Global {
   feeds : {[_id: string]: I.ClFeed;};
+  user : I.ClUser;
 }
 
 var G : Global = {
   feeds: undefined,
+  user: undefined,
 };
 
 
@@ -30,6 +32,22 @@ $(document).ready(function() {
 
     $("#view").css('display', 'block');
 
+    // after both these ajax requests, call callback
+    var lastly = _.after(2, callback);
+
+    // update the user
+    $.ajax({
+      type: 'get',
+      url: "/who-am-i-where-am-i",
+      data: {
+      },
+      success: function(data : string) {
+        G.user = JSON.parse(data);
+        lastly();
+      }
+    });
+
+    // update all of their subscription and put them in the DOM
     // ENDGAME: remove this ajax query if you've already got the data
     $.ajax({
       type: 'get',
@@ -56,13 +74,14 @@ $(document).ready(function() {
           (function(){
             var _feed = feed;
             Hammer(div).on('tap', function(event) {
+              $("#view").css('display', 'none');
               switchToRead(_feed);
             });
           })();
           $("#subscriptionList").append(div);
         }
 
-        callback();
+        lastly();
       }
     });
   };
@@ -185,8 +204,36 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////
 
   var switchToRead = function(feed : I.ClFeed, callback ?: () => void) {
-    console.log("switchToRead!");
-    console.log(feed);
+    callback = callback || function() { };
+    $("#read").css('display', 'block');
+
+    // TODO: make it possible for them to leave this page! No button out.
+    $.ajax({
+      type: 'get',
+      url: "/gimmie-some-items",
+      data: {
+        feedId: feed._id
+      },
+      success: function(data : string) {
+        // now that you have the items, add them all to the DOM.
+        var items : I.ClItem[] = JSON.parse(data);
+        $("#read").empty();
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          var div = $("<div>")
+            .append($("<h3>")
+                    .text(item.title))
+            .append($("<div>")
+                    .html(item.description)
+                    .addClass('itemDescription'))
+            .addClass('itemContainer');
+          // we prepend here because we want earliest at the very top
+          $("#read").prepend(div);
+        }
+        $("#read").css('display', 'block');
+        callback();
+      }
+    });
   };
 
 

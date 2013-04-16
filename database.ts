@@ -17,9 +17,15 @@ declare var addBySiteUrl : (url : string,
                           => void;
 
 /* Given a Facebook user, go look them up/create them in the database. */
-declare var getUser : (fbUser : I.FbUser,
+declare var getFbUser : (fbUser : I.FbUser,
                        callback : (err : any, dbUser ?: I.DbUser) => void)
                       => void;
+
+/* Just get the latest version of the user from the server.  This is the
+   preferred way to update client data rather than trying to duplicate every
+   server operation locally to save a few function calls. */
+declare var getUser : (brssId : string,
+                       callback : (err, user ?: I.DbUser) => void) => void;
 
 /* Given a user, give me an array of all of their feeds. */
 declare var getUserFeeds : (brssId : string,
@@ -36,6 +42,13 @@ declare var addUserFeeds : (brssId : string, url : string,
  */
 declare var deleteUserFeeds : (brssId : string, badIds : string[],
                                callback : (err : any) => void) => void;
+
+
+/* Just get some number of items. I'll worry about getting specific ones
+   out later when I'm doing infinite scrolling. */
+declare var getSomeItems : (feedId : string,
+                            callback : (err, items ?: I.DbItem[]) => void)
+                        => void;
 
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
@@ -352,7 +365,7 @@ var getSalt = function(facebookId : string,
 
 /* Give me the database version of this user. If they don't exist, create
  * them. */
-export var getUser = function(fbUser : I.FbUser,
+export var getFbUser = function(fbUser : I.FbUser,
                               callback : (err : any, user ?: I.DbUser) => void)
                             : void {
   db.users.find({fbId: fbUser.id}).toArray(function(err, a : I.DbUser[]) {
@@ -385,6 +398,12 @@ export var getUser = function(fbUser : I.FbUser,
     });
   });
 };
+
+export var getUser = function(brssId : string,
+                              callback : (err, user ?: I.DbUser) => void)
+: void {
+  db.users.findOne({brssId: brssId}, callback);
+}
 
 
 export var getUserFeeds = function(brssId : string,
@@ -448,6 +467,15 @@ export var deleteUserFeeds = function(brssId : string, badIds : string[],
     // finally, actually update the database
     db.users.update({brssId: brssId}, newUser, callback);
   });
+};
+
+export var getSomeItems = function(feedId : string,
+                                   callback : (err, items ?: I.DbItem[]) =>void)
+: void {
+  db.items.find({feedId: new mongo.ObjectID(feedId)})
+    .sort({date: -1})
+    .limit(10)
+    .toArray(callback);
 };
 
 

@@ -18,14 +18,6 @@ export interface DbFeed {
   _id : mongo.ObjectID;
 }
 
-/* Client feed. _id is tranferred into just its string. */
-export interface ClFeed {
-  title : string;
-  description : string;
-  url : string;
-  _id : string;
-}
-
 export interface DbItem {
   title : string;
   description : string;
@@ -51,6 +43,39 @@ export interface DbUser {
   _id : mongo.ObjectID;
   feedIds : mongo.ObjectID[];
 }
+
+
+export interface ClUser {
+  fbId : string;        // '1923493'
+  displayName : string; // 'Brian Malehorn'
+  givenName : string;   // 'Brian'
+  familyName : string;  // 'Malehorn'
+  gender : string;      // 'male'
+  profileUrl : string;  // 'facebook.com/bmalehorn'
+  brssId : string;      // '8068f390040f4049ae'
+  _id : string;
+  feedIds : string[];
+}
+
+
+/* Client feed. _id is tranferred into just its string. */
+export interface ClFeed {
+  title : string;
+  description : string;
+  url : string;
+  _id : string;
+}
+
+
+export interface ClItem {
+  title : string;
+  description : string;
+  url : string;
+  date : number;
+  feedId : string;
+  _id : string;
+}
+
 
 /* When you get an item via FeedParser (Fp), it's different then when you store
    it in the database. Thus, it's useful to have these distinctions. */
