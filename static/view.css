@@ -1,7 +1,17 @@
-#subscriptionView {
+.button {
+    height: 50px;
+    background-color: blue;
 }
 
 /* Initially, these should all not display */
-#subscriptionEdit, #subscriptionAdd, #subscriptionRead {
+#edit, #add, #read {
     display: none;
+}
+
+.keeper {
+    background-color: pink;
+}
+
+.bad {
+    background-color: yellow;
 }

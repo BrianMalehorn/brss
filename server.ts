@@ -45,7 +45,7 @@ interface Constants {
 
 var c : Constants = {
   ipAddress: process.env.OPENSHIFT_INTERNAL_IP || "localhost",
-  port: process.env.OPENSHIFT_INTERNAL_PORT || 8000
+  port: process.env.OPENSHIFT_INTERNAL_PORT || 80
 };
 
 
@@ -55,9 +55,9 @@ var c : Constants = {
 
 var FacebookStrategy = require('passport-facebook').Strategy;
 passport.use(new FacebookStrategy({
-    clientID: "232792796862700",
-    clientSecret: "d91b10687ae303073fd80d1278c4c23c",
-    callbackURL: "http://"+c.ipAddress+":"+c.port+"/auth/facebook/callback"
+  clientID: "232792796862700",
+  clientSecret: "d91b10687ae303073fd80d1278c4c23c",
+  callbackURL: "/auth/facebook/callback"
   },
   function(accessToken, refreshToken, profile, done) {
     return done(null, profile);
@@ -118,11 +118,26 @@ app.post("/add-feed", function(request, response) {
   var brssId : string = request.user;
   var url : string = request.body.url;
   util.pp(url, "url");
-  database.addUserFeeds(url, brssId, function(err, feeds ?: I.DbFeed[]) {
+  database.addUserFeeds(brssId, url, function(err, feeds ?: I.DbFeed[]) {
     util.throwIt(err);
     response.send(JSON.stringify(feeds));
   });
 });
+
+
+/* Delete the feeds from the current user. */
+app.del("/delete-these-feeds", function(request, response) {
+  var brssId : string = request.user;
+  var feedIds : string[] = request.body.feedIds;
+  util.pp(feedIds, "feedIds");
+
+  database.deleteUserFeeds(brssId, feedIds, function(err) {
+    util.throwIt(err);
+    response.send("Nothing to see here, folks!");
+  });
+
+});
+
 
 /********************************************************************
  * start!
@@ -132,8 +147,8 @@ database.start(function(err) {
   util.throwIt(err);
   console.log("%s: trying on %s:%d",
               (new Date()).toString(), c.ipAddress, c.port);
-  app.listen(c.port, c.ipAddress, -1, function() : void {
-    console.log("%s: started on %s:%d",
-                (new Date()).toString(), c.ipAddress, c.port);
-  });
+  app.listen(c.port);
+  console.log("%s: started on %s:%d",
+              (new Date()).toString(), c.ipAddress, c.port);
+  // app.listen(c.port, c.ipAddress, -1, function() : void {
 });

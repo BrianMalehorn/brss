@@ -353,8 +353,8 @@ interface JQueryStatic {
     type(obj: any): string;
 
     unique(arr: any[]): any[];
-	
-	/** 
+
+	/**
 	* Parses a string into an array of DOM nodes.
 	*
 	* @param data HTML string to be parsed
@@ -542,6 +542,14 @@ interface JQuery {
 
     click(eventData?: any, handler?: (eventObject: JQueryEventObject) => any): JQuery;
     click(handler: (eventObject: JQueryEventObject) => any): JQuery;
+
+    // added by Brian
+    ontap(onDown?: (eventObject: JQueryEventObject) => any,
+          onUp?: (eventObject: JQueryEventObject) => any,
+          onTap?: (eventObject: JQueryEventObject) => any,
+          onLong?: (eventObject: JQueryEventObject) => any
+         ): JQuery;
+
 
     dblclick(eventData?: any, handler?: (eventObject: JQueryEventObject) => any): JQuery;
     dblclick(handler: (eventObject: JQueryEventObject) => any): JQuery;

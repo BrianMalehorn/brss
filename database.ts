@@ -28,9 +28,14 @@ declare var getUserFeeds : (brssId : string,
 
 /* Given a url, adds all the feeds at that url to the user and calls the
    callback with those feeds. */
-declare var addUserFeeds : (url : string, brssId : string,
+declare var addUserFeeds : (brssId : string, url : string,
                             callback : (err, feed ?: I.DbFeed[]) => void)
                       => void;
+
+/* Given a user and a list of feed ID's, removes those feeds from user.feedIds
+ */
+declare var deleteUserFeeds : (brssId : string, badIds : string[],
+                               callback : (err : any) => void) => void;
 
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
@@ -390,17 +395,12 @@ export var getUserFeeds = function(brssId : string,
 : void {
   db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
     if (err) return callback(err);
-
-    // var feedIds = _.map(user.feedIds, function(objId : mongo.ObjectID) {
-    //   return objId.toString();
-    // });
-    // util.pp(feedIds, 'feedIds');
-
+    if (user === null) return callback("user is null!");
     db.feeds.find({_id: {$in: user.feedIds}}).toArray(callback);
   });
 };
 
-export var addUserFeeds = function(url : string, brssId : string,
+export var addUserFeeds = function(brssId : string, url : string,
                                    callback : (err, feeds ?: I.DbFeed[]) => void
 ) : void {
   db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
@@ -415,9 +415,16 @@ export var addUserFeeds = function(url : string, brssId : string,
       // mongo.ObjectID
       var newUser : I.DbUser = _.clone(user);
       var newIds = _.pluck(feeds, '_id');
+      var eachToString = (a) => _.map(a, (e) => e.toString());
       util.pp(newIds, 'newIds');
       util.pp(user.feedIds, 'user.feedIds');
-      newUser.feedIds = _.union(user.feedIds, newIds);
+      // turn them into strings, take their union, then map them back to
+      // ObjectID's
+      newUser.feedIds =
+        _.map(
+          _.union(
+            eachToString(user.feedIds), eachToString(newIds)),
+          (s : string) => new mongo.ObjectID(s));
       db.users.update({brssId: user.brssId}, newUser, function(err) {
         util.pp(user, "user");
         util.pp(newUser, "newUser");
@@ -425,6 +432,28 @@ export var addUserFeeds = function(url : string, brssId : string,
         callback(err, feeds);
       });
     });
+  });
+};
+
+export var deleteUserFeeds = function(brssId : string, badIds : string[],
+                                      callback : (err : any) => void)
+: void {
+  db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
+    if (err) return callback(err);
+    // make a new user, with user.feedIds not containing any of badIds
+    var newUser : I.DbUser = _.clone(user);
+    var eachToString = (a) => _.map(a, (e) => e.toString());
+    newUser.feedIds =
+      _.map(
+        _.difference(eachToString(newUser.feedIds), badIds),
+        (s : string) => new mongo.ObjectID(s));
+
+    util.pp(user.feedIds, "user.feedIds");
+    util.pp(badIds, "badIds");
+    util.pp(newUser.feedIds, "newUser.feedIds");
+
+    // finally, actually update the database
+    db.users.update({brssId: brssId}, newUser, callback);
   });
 };
 

@@ -18,6 +18,14 @@ export interface DbFeed {
   _id : mongo.ObjectID;
 }
 
+/* Client feed. _id is tranferred into just its string. */
+export interface ClFeed {
+  title : string;
+  description : string;
+  url : string;
+  _id : string;
+}
+
 export interface DbItem {
   title : string;
   description : string;

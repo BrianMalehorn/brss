@@ -1,5 +1,3 @@
-export var y : number = 6;
-
 export var throwIt = function(err : any) : void {
   if (err)
     throw err;
@@ -24,4 +22,7 @@ export var assert = function(cond : bool, msg ?: string) : void {
   if (!cond) {
     throw msg;
   }
+};
+
+export var pass = function(...args : any[]) : any {
 };

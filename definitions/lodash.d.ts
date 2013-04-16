@@ -82,7 +82,7 @@ interface Lodash {
   last : Function;
   lastIndexOf : Function;
   // length of array or object
-  map (a : any[], f : (x : any) => any) : any[];
+  map (a : any, f : (x : any) => any) : any[];
   max : Function;
   memoize (f : Function, resolver ?: Function) : Function;
   merge : Function;
@@ -128,7 +128,7 @@ interface Lodash {
   uniq : Function;
   unique : Function;
   uniqueId (s ?: string) : string;
-  values (obj : Object) : any[];
+  values (a : any) : any[];
   where : Function;
   without : Function;
   wrap : Function;
