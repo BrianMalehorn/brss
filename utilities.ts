@@ -1,3 +1,5 @@
+
+
 export var throwIt = function(err : any) : void {
   if (err)
     throw err;
@@ -25,4 +27,11 @@ export var assert = function(cond : bool, msg ?: string) : void {
 };
 
 export var pass = function(...args : any[]) : any {
+};
+
+export var httpize = function(url : string) : string {
+  if (url.indexOf("http://") !== 0) {
+    url = "http://" + url;
+  }
+  return url;
 };

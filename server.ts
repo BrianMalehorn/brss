@@ -44,7 +44,7 @@ interface Constants {
 }
 
 var c : Constants = {
-  ipAddress: process.env.OPENSHIFT_INTERNAL_IP || "localhost",
+  ipAddress: process.env.OPENSHIFT_INTERNAL_IP || "128.237.236.143",
   port: process.env.OPENSHIFT_INTERNAL_PORT || 80
 };
 
@@ -56,7 +56,7 @@ var c : Constants = {
 var FacebookStrategy = require('passport-facebook').Strategy;
 passport.use(new FacebookStrategy({
   clientID: "232792796862700",
-  clientSecret: "d91b10687ae303073fd80d1278c4c23c",
+  clientSecret: "961a0670ad0bd8f05eeabfa33ce230a0",
   callbackURL: "/auth/facebook/callback"
   },
   function(accessToken, refreshToken, profile, done) {
@@ -86,18 +86,6 @@ app.get("/auth/facebook/callback",
         }));
 
 
-/* Here, I have arbitrary requests to the server (this one just sends back a
-   file). But if I wanted, I could look up request.user.brssId in a database
-   where I store all the secure information and send it back. The only way it
-   could be spoofed is if they knew my salt.
-*/
-
-// app.get("/success.html", function(request, response) {
-//   response.send("you win!");
-//   // response.sendfile("success.html");
-// });
-
-
 /********************************************************************
  * listeners
  ********************************************************************/
@@ -114,10 +102,10 @@ app.get("/gimmie-my-feeds", function(request, response) {
 
 /* Find all feeds at the given url, add them to the current user, and send
    the found feeds back to the user. */
-app.post("/add-feed", function(request, response) {
+app.post("/add-feeds", function(request, response) {
   var brssId : string = request.user;
   var url : string = request.body.url;
-  util.pp(url, "url");
+  url = util.httpize(url);
   database.addUserFeeds(brssId, url, function(err, feeds ?: I.DbFeed[]) {
     util.throwIt(err);
     response.send(JSON.stringify(feeds));
@@ -130,12 +118,10 @@ app.del("/delete-these-feeds", function(request, response) {
   var brssId : string = request.user;
   var feedIds : string[] = request.body.feedIds;
   util.pp(feedIds, "feedIds");
-
   database.deleteUserFeeds(brssId, feedIds, function(err) {
     util.throwIt(err);
     response.send("Nothing to see here, folks!");
   });
-
 });
 
 

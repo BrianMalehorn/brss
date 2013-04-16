@@ -350,13 +350,11 @@ var getSalt = function(facebookId : string,
    });
 };
 
-/* Give be the database version of this user */
+/* Give me the database version of this user. If they don't exist, create
+ * them. */
 export var getUser = function(fbUser : I.FbUser,
                               callback : (err : any, user ?: I.DbUser) => void)
                             : void {
-  // var fbUser : I.FbUser = _fbUser;
-  // var callback : (err : any, user ?: I.DbUser) => void = _callback;
-
   db.users.find({fbId: fbUser.id}).toArray(function(err, a : I.DbUser[]) {
     if (err) return callback(err);
     util.assert(a.length <= 1,
@@ -416,8 +414,6 @@ export var addUserFeeds = function(brssId : string, url : string,
       var newUser : I.DbUser = _.clone(user);
       var newIds = _.pluck(feeds, '_id');
       var eachToString = (a) => _.map(a, (e) => e.toString());
-      util.pp(newIds, 'newIds');
-      util.pp(user.feedIds, 'user.feedIds');
       // turn them into strings, take their union, then map them back to
       // ObjectID's
       newUser.feedIds =
@@ -426,9 +422,6 @@ export var addUserFeeds = function(brssId : string, url : string,
             eachToString(user.feedIds), eachToString(newIds)),
           (s : string) => new mongo.ObjectID(s));
       db.users.update({brssId: user.brssId}, newUser, function(err) {
-        util.pp(user, "user");
-        util.pp(newUser, "newUser");
-        util.pp(feeds, "feeds");
         callback(err, feeds);
       });
     });

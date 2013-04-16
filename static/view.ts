@@ -20,49 +20,15 @@ var G : Global = {
 $(document).ready(function() {
 
 
-  // and make it so when they click on the buttons at the
-  // bottom, they can actually
-  Hammer($('#addSubscription')[0]).on('tap', function(event) {
-    switchToAdd();
-  });
-  Hammer($('#editSubscription')[0]).on('tap', function(event) {
-    switchToEdit();
-  });
-  Hammer($('#saveSubscription')[0]).on('tap', function(event) {
-    var bads = $(".keeper.bad");
-    var badIds : string[] = _.map(bads, (e) => e.id);
-    console.log(badIds);
-    $.ajax({
-      type: 'delete',
-      url: "/delete-these-feeds",
-      data: {
-        feedIds: badIds
-      },
-      success: function(data) {
-
-        // not needed: switchToView refreshes the feed list anyhow
-        // // filter out the bad ids from G.feeds
-        // var newFeeds : {[_id: string]: I.ClFeed;} = {};
-        // var goodIds : string[] = _.difference(_.keys(G.feeds), badIds);
-        // for (var i = 0; i < goodIds.length; i++) {
-        //   var _id : string = goodIds[i];
-        //   newFeeds[_id] = G.feeds[_id];
-        // }
-        // G.feeds = newFeeds;
-
-        switchToView();
-      }
-    });
-  });
+  ///////////////////////////////////////////////////
+  // view feed
+  ///////////////////////////////////////////////////
 
   // When you navigate to the subscriptionView page, you
   var switchToView = function(callback ?: () => void) {
     callback = callback || () => undefined;
 
     $("#view").css('display', 'block');
-    $("#edit").css('display', 'none');
-
-    G.feeds = G.feeds || {};
 
     // ENDGAME: remove this ajax query if you've already got the data
     $.ajax({
@@ -73,6 +39,7 @@ $(document).ready(function() {
       success: function(data : string) {
         // cool, now we have the feeds array. Add it to the DOM.
         $("#subscriptionList").empty();
+        G.feeds = {};
         var feedsArray : I.ClFeed[] = JSON.parse(data);
         for (var i = 0; i < feedsArray.length; i++) {
           var feed = feedsArray[i];
@@ -100,19 +67,80 @@ $(document).ready(function() {
     });
   };
 
-  var switchToAdd = function(callback ?: () => void) {
-    console.log("switchToAdd!");
-    // $("#view").css('display', 'none');
-    // $("#add").css('display', 'block');
+  // and make it so when they click on the buttons at the
+  // bottom, they can actually
+  Hammer($('#addSubscription')[0]).on('tap', function(event) {
+    // turn the lights off on your way out
+    $("#view").css('display', 'none');
+    switchToAdd();
+  });
+
+  Hammer($('#editSubscription')[0]).on('tap', function(event) {
+    $("#view").css('display', 'none');
+    switchToEdit();
+  });
+
+
+  ///////////////////////////////////////////////////
+  // add feed
+  ///////////////////////////////////////////////////
+
+  var alreadyHammerfiedAddButton = false;
+
+  // submit the search, ultimately going back to the home page.
+  // async.
+  var addSubmit = function(callback ?: Function) {
+    callback = callback || function() { };
+    var siteUrl : string = $("#searchBox").val();
+    $.ajax({
+      type: 'post',
+      url: "/add-feeds",
+      data: {
+        url: siteUrl
+      },
+      success: function(data) {
+        // data is a JSON-encoded version of the feeds you added
+        $("#add").css('display', 'none');
+        switchToView();
+      }
+    });
   };
+
+  var switchToAdd = function(callback ?: () => void) {
+    callback = callback || function() { };
+    $("#add").css('display', 'block');
+
+    // for some reason, it only works to hammerfy button when they're visible
+    // or something. Has to be put in this function
+    if (!alreadyHammerfiedAddButton) {
+      alreadyHammerfiedAddButton = true;
+      Hammer($("#addButton")[0]).on('tap', function(event) {
+        addSubmit();
+      });
+    }
+
+    callback();
+  };
+
+  $("#searchBox").keydown(function(event) {
+    // if they hit return, submit it
+    if (event.keyCode === 13) {
+      addSubmit();
+      // make it so that the key doesn't actually have its effect
+      return false;
+    }
+  });
+
+
+
+  ///////////////////////////////////////////////////
+  // edit/remove feeds
+  ///////////////////////////////////////////////////
 
   var switchToEdit = function(callback ?: () => void) {
     callback = callback || function() { };
-    console.log("switchToEdit!");
     // make the old one not visible
-    $("#view").css('display', 'none');
     $("#edit").css('display', 'block');
-    console.log($("#keepList"));
     $("#keepList").empty();
 
     // generate keepList's elements
@@ -132,14 +160,29 @@ $(document).ready(function() {
         $("#keepList").append(div);
       })();
     }
-
-    // var checkbox = $('<input>').attr('type', 'checkbox');
-    // $("#edit").append(checkbox);
-    // checkbox.click(function() {
-    //   console.log("check!");
-    // });
-
   };
+
+  Hammer($('#saveSubscription')[0]).on('tap', function(event) {
+    var bads = $(".keeper.bad");
+    var badIds : string[] = _.map(bads, (e) => e.id);
+    console.log(badIds);
+    $.ajax({
+      type: 'delete',
+      url: "/delete-these-feeds",
+      data: {
+        feedIds: badIds
+      },
+      success: function(data) {
+        $("#edit").css('display', 'none');
+        switchToView();
+      }
+    });
+  });
+
+
+  ///////////////////////////////////////////////////
+  // read feed
+  ///////////////////////////////////////////////////
 
   var switchToRead = function(feed : I.ClFeed, callback ?: () => void) {
     console.log("switchToRead!");
@@ -147,8 +190,11 @@ $(document).ready(function() {
   };
 
 
-  switchToView();
+  ///////////////////////////////////////////////////
+  // main
+  ///////////////////////////////////////////////////
 
+  switchToView();
 
   // $.ajax({
   //   type: 'post',
