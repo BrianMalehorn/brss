@@ -176,12 +176,7 @@ var updateFeed = function(url : string,
                           callback ?: (err, feed ?: I.DbFeed) => void) {
   if (!callback) callback = util.throwIt;
 
-  if (url.indexOf("http://") === -1) {
-    url = "http://" + url;
-  }
-  // replace "//" with "/"
-  url = url.replace(/\/\//g, "/");
-  url = url.replace("http:/", "http://");
+  url = util.httpize(url);
   console.log("update feed: " +  util.sify(url));
 
   db.feeds.find({url: url}).toArray(function(err, feeds : I.DbFeed[]) {
@@ -255,7 +250,7 @@ export var addBySiteUrl = function(url : string,
       var rssUrls : string[] = _.pluck(jqFeeds, 'href');
       var prependHttp = function(s : string) {
         // if it doesn't start with "http://", prepend the url to the rssUrl
-        if (s.indexOf("http://") != 0)
+        if (s.indexOf("http://") !== 0 && s.indexOf("https://") !== 0)
           return url + "/" + s;
         return s;
       };

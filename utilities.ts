@@ -1,8 +1,11 @@
-
-
 export var throwIt = function(err : any) : void {
   if (err)
     throw err;
+};
+
+export var logIt = function(err : any) : void {
+  if (err)
+    console.log(err);
 };
 
 export var sify = function(obj : any) : string {
@@ -30,8 +33,12 @@ export var pass = function(...args : any[]) : any {
 };
 
 export var httpize = function(url : string) : string {
-  if (url.indexOf("http://") !== 0) {
+  if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
     url = "http://" + url;
   }
+  // replace "//" with "/"
+  url = url.replace(/\/\//g, "/");
+  url = url.replace("http:/", "http://");
+  url = url.replace("https:/", "https://");
   return url;
 };

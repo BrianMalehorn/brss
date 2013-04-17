@@ -44,7 +44,7 @@ interface Constants {
 }
 
 var c : Constants = {
-  ipAddress: process.env.OPENSHIFT_INTERNAL_IP || "128.237.236.143",
+  ipAddress: process.env.OPENSHIFT_INTERNAL_IP || "localhost",
   port: process.env.OPENSHIFT_INTERNAL_PORT || 80
 };
 
@@ -124,7 +124,10 @@ app.post("/add-feeds", function(request, response) {
   var url : string = request.body.url;
   url = util.httpize(url);
   database.addUserFeeds(brssId, url, function(err, feeds ?: I.DbFeed[]) {
-    util.throwIt(err);
+    util.logIt(err);
+    if (err) {
+      feeds = [];
+    }
     response.send(JSON.stringify(feeds));
   });
 });

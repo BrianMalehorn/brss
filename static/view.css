@@ -8,6 +8,10 @@ body {
     padding: 1em;
 }
 
+#login {
+    color: white;
+}
+
 div {
     padding-top: 0.7em;
     padding-bottom: 0.7em;
@@ -24,12 +28,20 @@ div {
     background-color: #575757;
 }
 
+.button:hover {
+    cursor: pointer;
+}
+
 .subscription {
     padding-top: 0.7em;
     padding-bottom: 0.7em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     background-color: #828282;
+}
+
+.subscription:hover {
+    cursor: pointer;
 }
 
 /* Initially, these should all not display */
