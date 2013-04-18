@@ -15,6 +15,9 @@ interface Global {
   oldHash : string;
   // Did I just change the hash? Or did the user?
   hashChangeWasMine : bool;
+  // Keep track of the current feed in case they hit the back button.  You
+  // should never read from this; its purpose is entirely for when they press
+  // the back button. It should only be accessed by enterRead and exitRead.
   currentFeed : I.ClFeed;
 }
 
@@ -166,6 +169,11 @@ $(document).ready(function() {
       },
       success: function(data) {
         // data is a JSON-encoded version of the feeds you added
+        var feeds : I.ClFeed[] = JSON.parse(data);
+        // a quick hack to make it obvious that I couldn't find anything.
+        if (feeds.length === 0) {
+          alert("No feeds found.");
+        }
         exitAdd(enterView);
       }
     });
@@ -372,8 +380,10 @@ $(document).ready(function() {
 
     }
 
-      G.oldHash = window.location.hash;
-      G.hashChangeWasMine = false;
+    G.oldHash = window.location.hash;
+    // regardless of if this was a change I made or not, next time,
+    // make it obvious that it wasn't intentional.
+    G.hashChangeWasMine = false;
   };
 
 
