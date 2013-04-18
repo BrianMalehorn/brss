@@ -10,26 +10,66 @@ declare var Hammer : any;
 interface Global {
   feeds : {[_id: string]: I.ClFeed;};
   user : I.ClUser;
+  // the #foo I current think it is. this should be one of "#add", "#view",
+  // "#edit", "#read"
+  oldHash : string;
+  // Did I just change the hash? Or did the user?
+  hashChangeWasMine : bool;
+  currentFeed : I.ClFeed;
 }
 
 var G : Global = {
   feeds: undefined,
   user: undefined,
+  oldHash: "#_=_",
+  hashChangeWasMine: true,
+  currentFeed: undefined,
 };
-
 
 
 $(document).ready(function() {
 
+
+  /********************************************************************
+   * common functions
+   ********************************************************************/
+
+  var enterView : (callback ?: () => void) => void;
+  var exitView : (callback ?: () => void) => void;
+
+  var enterEdit : (callback ?: () => void) => void;
+  var exitEdit : (callback ?: () => void) => void;
+
+  var enterAdd : (callback ?: () => void) => void;
+  var exitAdd : (callback ?: () => void) => void;
+
+  var enterRead : (feed : I.ClFeed, callback ?: () => void) => void;
+  var exitRead : (callback ?: () => void) => void;
+
+  var changeHash : (hash : string) => void;
+
+  /********************************************************************
+   * implementation
+   ********************************************************************/
+
+
+  ///////////////////////////////////////////////////
+  // misc utilities
+  ///////////////////////////////////////////////////
+
+  var changeHash = function(hash : string) : void {
+    G.hashChangeWasMine = true;
+    window.location.hash = hash;
+  };
 
   ///////////////////////////////////////////////////
   // view feed
   ///////////////////////////////////////////////////
 
   // When you navigate to the subscriptionView page, you
-  var switchToView = function(callback ?: () => void) {
+  var enterView = function(callback ?: () => void) {
     callback = callback || () => undefined;
-
+    changeHash("#view");
     $("#view").css('display', 'block');
 
     // after both these ajax requests, call callback
@@ -56,7 +96,6 @@ $(document).ready(function() {
       },
       success: function(data : string) {
         // cool, now we have the feeds array. Add it to the DOM.
-        $("#subscriptionList").empty();
         G.feeds = {};
         var feedsArray : I.ClFeed[] = JSON.parse(data);
         for (var i = 0; i < feedsArray.length; i++) {
@@ -74,8 +113,9 @@ $(document).ready(function() {
           (function(){
             var _feed = feed;
             Hammer(div).on('tap', function(event) {
-              $("#view").css('display', 'none');
-              switchToRead(_feed);
+              exitView(function() {
+                enterRead(_feed);
+              });
             });
           })();
           $("#subscriptionList").append(div);
@@ -86,17 +126,24 @@ $(document).ready(function() {
     });
   };
 
+  var exitView = function(callback ?: Function) {
+    callback = callback || function() { };
+    $("#view").css('display', 'none');
+    $("#subscriptionList").empty();
+    callback();
+  };
+
   // and make it so when they click on the buttons at the
   // bottom, they can actually
   Hammer($('#addSubscription')[0]).on('tap', function(event) {
     // turn the lights off on your way out
-    $("#view").css('display', 'none');
-    switchToAdd();
+    exitView(enterAdd);
   });
 
   Hammer($('#editSubscription')[0]).on('tap', function(event) {
-    $("#view").css('display', 'none');
-    switchToEdit();
+    exitView(function() {
+      enterEdit();
+    });
   });
 
 
@@ -119,14 +166,14 @@ $(document).ready(function() {
       },
       success: function(data) {
         // data is a JSON-encoded version of the feeds you added
-        $("#add").css('display', 'none');
-        switchToView();
+        exitAdd(enterView);
       }
     });
   };
 
-  var switchToAdd = function(callback ?: () => void) {
+  var enterAdd = function(callback ?: () => void) {
     callback = callback || function() { };
+    changeHash("#add");
     $("#add").css('display', 'block');
 
     // for some reason, it only works to hammerfy button when they're visible
@@ -138,6 +185,12 @@ $(document).ready(function() {
       });
     }
 
+    callback();
+  };
+
+  var exitAdd = function(callback ?: () => void) {
+    callback = callback || function() { };
+    $("#add").css('display', 'none');
     callback();
   };
 
@@ -156,11 +209,11 @@ $(document).ready(function() {
   // edit/remove feeds
   ///////////////////////////////////////////////////
 
-  var switchToEdit = function(callback ?: () => void) {
+  var enterEdit = function(callback ?: () => void) {
     callback = callback || function() { };
-    // make the old one not visible
+    changeHash("#edit");
     $("#edit").css('display', 'block');
-    $("#keepList").empty();
+
 
     // generate keepList's elements
     for (var _id in G.feeds) {
@@ -181,31 +234,42 @@ $(document).ready(function() {
     }
   };
 
+  var exitEdit = function(callback ?: () => void) {
+    callback = callback || function() { };
+    $("#edit").css('display', 'none');
+    $("#keepList").empty();
+
+    callback();
+  };
+
   Hammer($('#saveSubscription')[0]).on('tap', function(event) {
+    // you need to get these out ahead of time, before exitEdit
+    // removes them
     var bads = $(".keeper.bad");
     var badIds : string[] = _.map(bads, (e) => e.id);
-    console.log(badIds);
-    $.ajax({
-      type: 'delete',
-      url: "/delete-these-feeds",
-      data: {
-        feedIds: badIds
-      },
-      success: function(data) {
-        $("#edit").css('display', 'none');
-        switchToView();
-      }
+    exitEdit(function() : void {
+      $.ajax({
+        type: 'delete',
+        url: "/delete-these-feeds",
+        data: {
+          feedIds: badIds
+        },
+        success: function(data) {
+          enterView();
+        }
+      });
     });
   });
-
 
   ///////////////////////////////////////////////////
   // read feed
   ///////////////////////////////////////////////////
 
-  var switchToRead = function(feed : I.ClFeed, callback ?: () => void) {
+  var enterRead = function(feed : I.ClFeed, callback ?: () => void) {
     callback = callback || function() { };
     $("#read").css('display', 'block');
+    changeHash("#read");
+    G.currentFeed = feed;
 
     // TODO: make it possible for them to leave this page! No button out.
     $.ajax({
@@ -217,7 +281,6 @@ $(document).ready(function() {
       success: function(data : string) {
         // now that you have the items, add them all to the DOM.
         var items : I.ClItem[] = JSON.parse(data);
-        $("#read").empty();
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
           var div = $("<div>")
@@ -236,8 +299,7 @@ $(document).ready(function() {
         $("#read").css('display', 'block');
         var back = $("<div>").addClass("button").text("back");
         Hammer(back[0]).on('tap', function(event) {
-          $("#read").css('display', 'none');
-          switchToView();
+          exitRead(enterView);
         });
         $("#read").prepend(back)
         callback();
@@ -246,35 +308,79 @@ $(document).ready(function() {
   };
 
 
+  var exitRead = function(callback ?: () => void) : void {
+    callback = callback || function() { };
+    G.currentFeed = undefined;
+    $("#read").css('display', 'none');
+    $("#read").empty();
+    callback();
+  };
+
+
+  ///////////////////////////////////////////////////
+  // misc listeners
+  ///////////////////////////////////////////////////
+
+  window.onhashchange = function() {
+
+    console.log("Hash changed from " + G.oldHash +
+                " to " + window.location.hash);
+    console.log(G.hashChangeWasMine);
+
+    // if it wasn't mine (i.e. the user did it by hitting back), find out
+    // where I was coming from and where I'm going to make make the swap
+    if (!G.hashChangeWasMine) {
+      var exit : (callback ?: () => void) => void = function() { };
+      switch (G.oldHash) {
+      case "#view":
+        exit = exitView;
+        break;
+      case "#edit":
+        exit = exitEdit;
+        break;
+      case "#add":
+        exit = exitAdd;
+        break;
+      case "#read":
+        exit = exitRead;
+        break;
+      }
+
+      var enter : (callback ?: () => void) => void = function() { };
+      switch (window.location.hash) {
+      case "#view":
+        enter = enterView;
+        break;
+      case "#edit":
+        enter = enterEdit;
+        break;
+      case "#add":
+        enter = enterAdd;
+        break;
+      case "#read":
+        enter = (function(){
+          var feed = G.currentFeed;
+          return function(callback ?: () => void) : void {
+            enterRead(feed);
+          };
+        })();
+        break;
+      }
+
+      // out with the old, then in with the new
+      exit(enter);
+
+    }
+
+      G.oldHash = window.location.hash;
+      G.hashChangeWasMine = false;
+  };
+
+
   ///////////////////////////////////////////////////
   // main
   ///////////////////////////////////////////////////
 
-  switchToView();
-
-  // $.ajax({
-  //   type: 'post',
-  //   url: "/add-feed",
-  //   data: {
-  //     url: "http://foxnews.com"
-  //   },
-  //   success: function(data) {
-  //     var feeds : I.DbFeed[] = JSON.parse(data);
-  //     console.log(feeds);
-  //     $subscriptionView.append($("<div>")
-  //                              .text("added feeds: " + JSON.stringify(feeds)));
-  //     $.ajax({
-  //       type: 'get',
-  //       url: "/gimmie-my-feeds",
-  //       data: {
-  //       },
-  //       success: function(data) {
-  //         var feeds : I.DbFeed[] = JSON.parse(data);
-  //         $subscriptionView.append($("<div>")
-  //                                  .text("my feeds: " + JSON.stringify(feeds)));
-  //       }
-  //     });
-  //   }
-  // });
+  enterView();
 
 });
