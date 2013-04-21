@@ -117,7 +117,6 @@ $(window).on('load', function() {
           (function(){
             var _feed = feed;
             div.onButtonTap(function() {
-              console.log("Tap!");
               exitView(function() {
                 enterRead(_feed);
               });
@@ -234,7 +233,6 @@ $(window).on('load', function() {
           .prop('checked', true);
         var toggleThisDiv = function() {
           // it's bad if it's not checked
-          console.log("Toggle this div!");
           div.toggleClass('bad');
           checkbox.prop('checked', !div.hasClass('bad'));
         };
