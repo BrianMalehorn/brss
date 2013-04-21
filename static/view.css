@@ -1,6 +1,6 @@
 body {
     text-shadow: 0 0.05em 0.05em black;
-    background-color: 363636;
+    background-color: #363636;
     text-align: center;
     font-size: 24px;
     font-family: "Trebuchet MS", Helvetica, sans-serif;
@@ -50,9 +50,9 @@ div {
 }
 
 .itemContainer {
-    font-family: Georgia, serif;
-    background-color: dedede; /* lol, king dedede */
     color: black;
+    font-family: Georgia, serif;
+    background-color: #dedede; /* lol, king dedede */
     text-shadow: 0 0 0 black;
     padding: 0.6em;
     margin-bottom: 0.5em;

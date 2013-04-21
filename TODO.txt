@@ -1,8 +1,16 @@
-- install tsc on openshift
-- write makefiles or some sort of "compile everything" script
+========================
+= todo
+========================
+- rounded corners
+- Evan's touch library: change color while pressed
+- on #edit, click anywhere on block checks/unchecks
+
 
 ========================
 = done
 ========================
 - get interfaces and such from https://github.com/borisyankov/DefinitelyTyped
 - get basic "hello world" server running
+- install tsc on openshift
+- write makefiles or some sort of "compile everything" script
+- feeds sorted in alphabetical order

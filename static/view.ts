@@ -15,10 +15,10 @@ interface Global {
   oldHash : string;
   // Did I just change the hash? Or did the user?
   hashChangeWasMine : bool;
-  // Keep track of the current feed in case they hit the back button.  You
+  // Keep track of the last visited feed in case they hit the back button.  You
   // should never read from this; its purpose is entirely for when they press
   // the back button. It should only be accessed by enterRead and exitRead.
-  currentFeed : I.ClFeed;
+  lastFeed : I.ClFeed;
 }
 
 var G : Global = {
@@ -26,7 +26,7 @@ var G : Global = {
   user: undefined,
   oldHash: "#_=_",
   hashChangeWasMine: true,
-  currentFeed: undefined,
+  lastFeed: undefined,
 };
 
 
@@ -99,12 +99,12 @@ $(document).ready(function() {
       },
       success: function(data : string) {
         // cool, now we have the feeds array. Add it to the DOM.
+        var unsorted : I.ClFeed[] = JSON.parse(data);
+        var feeds : I.ClFeed[] = _.sortBy(unsorted, (f : I.ClFeed) => f.title);
         G.feeds = {};
-        var feedsArray : I.ClFeed[] = JSON.parse(data);
-        for (var i = 0; i < feedsArray.length; i++) {
-          var feed = feedsArray[i];
+        feeds.forEach(function(feed : I.ClFeed) {
           G.feeds[feed._id] = feed;
-        }
+        });
 
         for (var _id in G.feeds) {
           var feed : I.ClFeed = G.feeds[_id];
@@ -277,7 +277,7 @@ $(document).ready(function() {
     callback = callback || function() { };
     $("#read").css('display', 'block');
     changeHash("#read");
-    G.currentFeed = feed;
+    G.lastFeed = feed;
 
     // TODO: make it possible for them to leave this page! No button out.
     $.ajax({
@@ -318,7 +318,6 @@ $(document).ready(function() {
 
   var exitRead = function(callback ?: () => void) : void {
     callback = callback || function() { };
-    G.currentFeed = undefined;
     $("#read").css('display', 'none');
     $("#read").empty();
     callback();
@@ -330,11 +329,6 @@ $(document).ready(function() {
   ///////////////////////////////////////////////////
 
   window.onhashchange = function() {
-
-    console.log("Hash changed from " + G.oldHash +
-                " to " + window.location.hash);
-    console.log(G.hashChangeWasMine);
-
     // if it wasn't mine (i.e. the user did it by hitting back), find out
     // where I was coming from and where I'm going to make make the swap
     if (!G.hashChangeWasMine) {
@@ -366,12 +360,10 @@ $(document).ready(function() {
         enter = enterAdd;
         break;
       case "#read":
-        enter = (function(){
-          var feed = G.currentFeed;
-          return function(callback ?: () => void) : void {
-            enterRead(feed);
-          };
-        })();
+        enter = function(callback ?: () => void) : void {
+          callback = callback || function() { };
+          enterRead(G.lastFeed, callback);
+        };
         break;
       }
 
