@@ -120,13 +120,7 @@ $(window).on('load', function() {
               console.log("Tap!");
               exitView(function() {
                 enterRead(_feed);
-            });
-
-            // Hammer(div[0]).on('tap', function(event) {
-            //   exitView(function() {
-            //     enterRead(_feed);
-            //   });
-
+              });
             });
           })();
           $("#subscriptionList").append(div);
@@ -151,21 +145,9 @@ $(window).on('load', function() {
     // turn the lights off on your way out
     exitView(enterAdd);
   });
-
-  // Hammer($('#addSubscription')[0]).on('tap', function(event) {
-  //   exitView(enterAdd);
-  // });
-
   $('#editSubscription').onButtonTap(function() {
     exitView(enterEdit);
   });
-
-  // Hammer($('#editSubscription')[0]).on('tap', function(event) {
-  //   exitView(function() {
-  //     enterEdit();
-  //   });
-  // });
-
 
   ///////////////////////////////////////////////////
   // add feed
@@ -209,11 +191,6 @@ $(window).on('load', function() {
       $("#addButton").onButtonTap(function() {
         addSubmit();
       });
-
-      // Hammer($("#addButton")[0]).on('tap', function(event) {
-      //   addSubmit();
-      // });
-
     }
 
     callback();
@@ -254,11 +231,15 @@ $(window).on('load', function() {
         var div = $('<div>').addClass('keeper').attr('id', feed._id);
         var checkbox = $('<input>')
           .attr('type', 'checkbox')
-          .click(function() {
-            // it's bad if it's not checked
-            div.toggleClass('bad', !checkbox.is(':checked'));
-          })
           .prop('checked', true);
+        var toggleThisDiv = function() {
+          // it's bad if it's not checked
+          console.log("Toggle this div!");
+          div.toggleClass('bad');
+          checkbox.prop('checked', !div.hasClass('bad'));
+        };
+        div.onButtonTap(toggleThisDiv);
+        checkbox.click(toggleThisDiv);
         div.append(checkbox).append(feed.title);
         $("#keepList").append(div);
       })();
@@ -274,9 +255,6 @@ $(window).on('load', function() {
   };
 
   $("#saveSubscription").onButtonTap(function() {
-
-  // Hammer($('#saveSubscription')[0]).on('tap', function(event) {
-
     // you need to get these out ahead of time, before exitEdit
     // removes them
     var bads = $(".keeper.bad");
@@ -336,11 +314,6 @@ $(window).on('load', function() {
         back.onButtonTap(function() {
           exitRead(enterView);
         });
-
-        // Hammer(back[0]).on('tap', function(event) {
-        //   exitRead(enterView);
-        // });
-
         $("#read").prepend(back)
         callback();
       }
