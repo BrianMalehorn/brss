@@ -37,14 +37,21 @@ div {
     background-color: white;
 }
 
-.button:hover {
+.subscription, .button, .keeper, .bad {
+    border-radius: 0.8em;
+    /* turn off the annoying highlight on a tap*/
+    -webkit-tap-highlight-color: transparent;
+    -moz-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.subscription, .button, .keeper, .bad:hover {
     cursor: pointer;
 }
-
-.subscription,.button,.keeper,.bad {
-    border-radius: 0.8em;
-}
-
 .subscription {
     padding-top: 0.7em;
     padding-bottom: 0.7em;
@@ -56,10 +63,6 @@ div {
 .subscription.buttonDown {
     color: #828282;
     background-color: white;
-}
-
-.subscription:hover {
-    cursor: pointer;
 }
 
 /* Initially, these should all not display */
