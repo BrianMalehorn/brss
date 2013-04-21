@@ -28,8 +28,21 @@ div {
     background-color: #575757;
 }
 
+.buttonDown {
+    text-shadow: none;
+}
+
+.button.buttonDown {
+    color: #575757;
+    background-color: white;
+}
+
 .button:hover {
     cursor: pointer;
+}
+
+.subscription,.button,.keeper,.bad {
+    border-radius: 0.8em;
 }
 
 .subscription {
@@ -38,6 +51,11 @@ div {
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     background-color: #828282;
+}
+
+.subscription.buttonDown {
+    color: #828282;
+    background-color: white;
 }
 
 .subscription:hover {
@@ -75,10 +93,8 @@ p {
 
 .keeper {
     background-color: #4d66ab;
-    /* background-color: pink; */
 }
 
 .bad {
     background-color: #ab4d53;
-    /* background-color: yellow; */
 }

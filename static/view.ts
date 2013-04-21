@@ -3,8 +3,6 @@
 
 declare var _ : Lodash;
 import I = module('../interfaces');
-// TODO: make Hammer at least a little typesafe
-declare var Hammer : any;
 
 /* The global state */
 interface Global {
@@ -29,9 +27,10 @@ var G : Global = {
   lastFeed: undefined,
 };
 
+// I would use this, but it crashes tsc!
+// $(window).load(function() {
 
-$(document).ready(function() {
-
+$(window).on('load', function() {
 
   /********************************************************************
    * common functions
@@ -110,15 +109,24 @@ $(document).ready(function() {
           var feed : I.ClFeed = G.feeds[_id];
           var div = ($('<div>')
                      .addClass('subscription')
+                     // TODO: remove id thing. I don't think I ever
+                     // use it
                      .attr('id', feed._id)
-                     .text(feed.title))[0];
+                     .text(feed.title));
           // if they click on this div, they should try to go read it
           (function(){
             var _feed = feed;
-            Hammer(div).on('tap', function(event) {
+            div.onButtonTap(function() {
+              console.log("Tap!");
               exitView(function() {
                 enterRead(_feed);
-              });
+            });
+
+            // Hammer(div[0]).on('tap', function(event) {
+            //   exitView(function() {
+            //     enterRead(_feed);
+            //   });
+
             });
           })();
           $("#subscriptionList").append(div);
@@ -138,16 +146,25 @@ $(document).ready(function() {
 
   // and make it so when they click on the buttons at the
   // bottom, they can actually
-  Hammer($('#addSubscription')[0]).on('tap', function(event) {
+
+  $('#addSubscription').onButtonTap(function() {
     // turn the lights off on your way out
     exitView(enterAdd);
   });
 
-  Hammer($('#editSubscription')[0]).on('tap', function(event) {
-    exitView(function() {
-      enterEdit();
-    });
+  // Hammer($('#addSubscription')[0]).on('tap', function(event) {
+  //   exitView(enterAdd);
+  // });
+
+  $('#editSubscription').onButtonTap(function() {
+    exitView(enterEdit);
   });
+
+  // Hammer($('#editSubscription')[0]).on('tap', function(event) {
+  //   exitView(function() {
+  //     enterEdit();
+  //   });
+  // });
 
 
   ///////////////////////////////////////////////////
@@ -188,9 +205,15 @@ $(document).ready(function() {
     // or something. Has to be put in this function
     if (!alreadyHammerfiedAddButton) {
       alreadyHammerfiedAddButton = true;
-      Hammer($("#addButton")[0]).on('tap', function(event) {
+
+      $("#addButton").onButtonTap(function() {
         addSubmit();
       });
+
+      // Hammer($("#addButton")[0]).on('tap', function(event) {
+      //   addSubmit();
+      // });
+
     }
 
     callback();
@@ -250,7 +273,10 @@ $(document).ready(function() {
     callback();
   };
 
-  Hammer($('#saveSubscription')[0]).on('tap', function(event) {
+  $("#saveSubscription").onButtonTap(function() {
+
+  // Hammer($('#saveSubscription')[0]).on('tap', function(event) {
+
     // you need to get these out ahead of time, before exitEdit
     // removes them
     var bads = $(".keeper.bad");
@@ -306,9 +332,15 @@ $(document).ready(function() {
         }
         $("#read").css('display', 'block');
         var back = $("<div>").addClass("button").text("back");
-        Hammer(back[0]).on('tap', function(event) {
+
+        back.onButtonTap(function() {
           exitRead(enterView);
         });
+
+        // Hammer(back[0]).on('tap', function(event) {
+        //   exitRead(enterView);
+        // });
+
         $("#read").prepend(back)
         callback();
       }

@@ -383,6 +383,9 @@ interface JQuery {
     serialize(): string;
     serializeArray(): any[];
 
+    // added by Brian
+  onButtonTap(onTap ?: () => void, onLong ?: () => void) : void;
+
     /**********
      ATTRIBUTES
     ***********/
