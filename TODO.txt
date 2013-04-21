@@ -4,6 +4,8 @@
 - scrolling to top and bottom have native effect (blue stuff on Android)
 - loading wheel from adding feed
 - have "Brss" at the top
+- have "http://" and other stuff stripped from #add submission
+- can't highlight
 
 ========================
 = done

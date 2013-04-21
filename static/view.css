@@ -92,8 +92,6 @@ p {
 }
 
 .keeper.buttonDown {
-    /* text-shadow: none; */
-    /* background-color: #9f52de; */
     background-color: #704196;
     text-shadow: 0 0.05em 0.05em black;
 }
