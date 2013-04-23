@@ -4,7 +4,7 @@ RMFLAGS=-f
 
 COMMON_SOURCES=interfaces.ts
 SERVER_SOURCES=server.ts database.ts utilities.ts
-STATIC_SOURCES=static/view.ts
+STATIC_SOURCES=static/brss.ts
 
 SERVER_MAPS=$(SERVER_SOURCES:.ts=.js.map)
 SERVER_JS=$(SERVER_SOURCES:.ts=.js)
@@ -13,13 +13,13 @@ STATIC_JS=$(STATIC_SOURCES:.ts=.js)
 COMMON_MAPS=$(COMMON_SOURCES:.ts=.js.map)
 COMMON_JS=$(COMMON_SOURCES:.ts=.js)
 
-all: server.js static/view.js
+all: server.js static/brss.js
 
 server.js: $(SERVER_SOURCES) $(COMMON_SOURCES)
 	$(TSC) $(TSCFLAGS) server.ts
 
-static/view.js: $(STATIC_SOURCES) $(COMMON_SOURCES)
-	$(TSC) $(TSCFLAGS) static/view.ts
+static/brss.js: $(STATIC_SOURCES) $(COMMON_SOURCES)
+	$(TSC) $(TSCFLAGS) static/brss.ts
 
 clean:
 	rm $(RMFLAGS) $(SERVER_MAPS)

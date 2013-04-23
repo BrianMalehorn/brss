@@ -241,18 +241,18 @@ $(window).on('load', function() {
         var div = $('<div>').addClass('keeper').attr('id', feed._id);
         var checkbox = $('<input>')
           .attr('type', 'checkbox')
-          .prop('checked', true);
+          .prop('checked', false);
         div.onButtonTap(function() {
-          // it's bad if it's not checked
+          // it's bad if it's checked
           div.toggleClass('bad');
-          checkbox.prop('checked', !div.hasClass('bad'));
+          checkbox.prop('checked', div.hasClass('bad'));
         });
         checkbox.click(function() {
           // if you click on the checkbox, it will also be a click on the div,
           // causing a double-negative: the class will toggle but the checkbox
           // will toggle twice, staying the same. So when they click the
           // checkbox, make sure it's in the right state.
-          checkbox.prop('checked', !div.hasClass('bad'));
+          checkbox.prop('checked', div.hasClass('bad'));
         });
         div.append(checkbox).append(feed.title);
         $("#keepList").append(div);

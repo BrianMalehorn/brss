@@ -6,6 +6,8 @@ body {
     font-family: "Trebuchet MS", Helvetica, sans-serif;
     color: white;
     padding: 1em;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
 }
 
 #login {
