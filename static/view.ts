@@ -152,28 +152,44 @@ $(window).on('load', function() {
   // add feed
   ///////////////////////////////////////////////////
 
+  var showLoader = function() : void {
+    $("#loader").css('display', 'block');
+  };
+
+  var hideLoader = function() : void {
+    $("#loader").css('display', 'none');
+  };
+
   var alreadyHammerfiedAddButton = false;
 
   // submit the search, ultimately going back to the home page.
   // async.
-  var addSubmit = function(callback ?: Function) {
-    callback = callback || function() { };
+  var addSubmit = function() : void {
     var siteUrl : string = $("#searchBox").val();
-    $.ajax({
-      type: 'post',
-      url: "/add-feeds",
-      data: {
-        url: siteUrl
-      },
-      success: function(data) {
-        // data is a JSON-encoded version of the feeds you added
-        var feeds : I.ClFeed[] = JSON.parse(data);
-        // a quick hack to make it obvious that I couldn't find anything.
-        if (feeds.length === 0) {
-          alert("No feeds found.");
+    exitAdd(function() {
+      console.log("@@@ 0.1");
+      showLoader();
+      console.log("@@@ 0.2");
+      $.ajax({
+        type: 'post',
+        url: "/add-feeds",
+        data: {
+          url: siteUrl
+        },
+        success: function(data) {
+          // data is a JSON-encoded version of the feeds you added
+          var feeds : I.ClFeed[] = JSON.parse(data);
+          // a quick hack to make it obvious that I couldn't find anything.
+          if (feeds.length === 0) {
+            alert("No feeds found.");
+          }
+          console.log("@@@ 1");
+          hideLoader();
+          console.log("@@@ 2");
+          enterView();
+          console.log("@@@ 3");
         }
-        exitAdd(enterView);
-      }
+      });
     });
   };
 
@@ -231,13 +247,18 @@ $(window).on('load', function() {
         var checkbox = $('<input>')
           .attr('type', 'checkbox')
           .prop('checked', true);
-        var toggleThisDiv = function() {
+        div.onButtonTap(function() {
           // it's bad if it's not checked
           div.toggleClass('bad');
           checkbox.prop('checked', !div.hasClass('bad'));
-        };
-        div.onButtonTap(toggleThisDiv);
-        checkbox.click(toggleThisDiv);
+        });
+        checkbox.click(function() {
+          // if you click on the checkbox, it will also be a click on the div,
+          // causing a double-negative: the class will toggle but the checkbox
+          // will toggle twice, staying the same. So when they click the
+          // checkbox, make sure it's in the right state.
+          checkbox.prop('checked', !div.hasClass('bad'));
+        });
         div.append(checkbox).append(feed.title);
         $("#keepList").append(div);
       })();

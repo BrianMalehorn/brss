@@ -66,8 +66,13 @@ div {
 }
 
 /* Initially, these should all not display */
-#edit, #add, #read {
+#edit, #add, #read, #loader {
     display: none;
+}
+
+#loader {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .itemContainer {

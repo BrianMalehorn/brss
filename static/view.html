@@ -10,6 +10,8 @@
 	<link rel="stylesheet" type="text/css" href="reset.css">
 	<link rel="stylesheet" type="text/css" href="view.css">
 
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   </head>
 
@@ -34,12 +36,14 @@
 
     <div id="add">
       Type the name of a website with an RSS feed.
-      <input id="searchBox" type="text" placeholder="e.g. nytimes.com"/>
+      <input id="searchBox" type="url" placeholder="e.g. nytimes.com"/>
       <div id="addButton" class="button">add</div>
     </div>
 
     <div id="read">
     </div>
+
+    <img id="loader" src="loader.gif"></img>
   <body>
 
 </html>

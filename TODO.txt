@@ -4,9 +4,8 @@
 - scrolling to top and bottom have native effect (blue stuff on Android)
 - loading wheels everywhere. In between every transition.
 - have "Brss" at the top
-- have "http://" and other stuff stripped from #add submission
-- #add textbox should hint at being a url: .com button on keyboard, etc.
 - on desktop, buttons have a max width
+- images are scaled to div width
 
 
 ========================
@@ -21,3 +20,5 @@
 - Evan's touch library: change color while pressed
 - on #edit, click anywhere on block checks/unchecks
 - can't highlight
+- #add textbox should hint at being a url: .com button on keyboard, etc.
+- have "http://" and other stuff stripped from #add submission
