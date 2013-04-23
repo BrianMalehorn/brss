@@ -167,9 +167,7 @@ $(window).on('load', function() {
   var addSubmit = function() : void {
     var siteUrl : string = $("#searchBox").val();
     exitAdd(function() {
-      console.log("@@@ 0.1");
       showLoader();
-      console.log("@@@ 0.2");
       $.ajax({
         type: 'post',
         url: "/add-feeds",
@@ -183,11 +181,8 @@ $(window).on('load', function() {
           if (feeds.length === 0) {
             alert("No feeds found.");
           }
-          console.log("@@@ 1");
           hideLoader();
-          console.log("@@@ 2");
-          enterView();
-          console.log("@@@ 3");
+          enterView(null);
         }
       });
     });

@@ -6,6 +6,7 @@
 - have "Brss" at the top
 - on desktop, buttons have a max width
 - images are scaled to div width
+- on #add, if you give direct link to rss .xml, still works
 
 
 ========================
