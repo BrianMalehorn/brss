@@ -14,10 +14,14 @@ module View {
     $("#view").css('display', 'block');
 
     // after both these ajax requests, call callback
-    var lastly = _.after(2, callback);
+    var lastly : Function = null;
 
-    // update the user
-    $.ajax({
+    // first, put this loader in the way so they know they should
+    // be waiting
+    $("#subscriptionList").append($("#loaderImage").clone());
+
+    var ajaxes = [{
+      // update the user
       type: 'get',
       url: "/who-am-i-where-am-i",
       data: {
@@ -26,11 +30,9 @@ module View {
         Misc.user = JSON.parse(data);
         lastly();
       }
-    });
-
-    // update all of their subscription and put them in the DOM
-    // ENDGAME: remove this ajax query if you've already got the data
-    $.ajax({
+    }, {
+      // update all of their subscription and put them in the DOM
+      // ENDGAME: remove this ajax query if you've already got the data
       type: 'get',
       url: "/gimmie-my-feeds",
       data: {
@@ -44,6 +46,7 @@ module View {
           Misc.feeds[feed._id] = feed;
         });
 
+        $("#subscriptionList").empty();
         for (var _id in Misc.feeds) {
           var feed : ClFeed = Misc.feeds[_id];
           var div = ($('<div>')
@@ -66,7 +69,11 @@ module View {
 
         lastly();
       }
-    });
+    }];
+
+    lastly = _.after(ajaxes.length, callback);
+    ajaxes.forEach($.ajax);
+
   };
 
   export var exitView = function(callback ?: Function) {

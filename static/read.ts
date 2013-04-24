@@ -13,7 +13,9 @@ module Read {
     Misc.changeHash("#read");
     Misc.lastFeed = feed;
 
-    // TODO: make it possible for them to leave this page! No button out.
+    $("#read").css('display', 'block');
+    $("#readList").append($("#loaderImage").clone());
+
     $.ajax({
       type: 'get',
       url: "/gimmie-some-items",
@@ -23,6 +25,7 @@ module Read {
       success: function(data : string) {
         // now that you have the items, add them all to the DOM.
         var items : ClItem[] = JSON.parse(data);
+        $("#readList").empty();
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
           var div = $("<div>")
@@ -36,15 +39,9 @@ module Read {
                     .addClass('itemDescription'))
             .addClass('itemContainer');
           // we prepend here because we want earliest at the very top
-          $("#read").prepend(div);
+          $("#readList").prepend(div);
         }
-        $("#read").css('display', 'block');
-        var back = $("<div>").addClass("button").text("back");
 
-        back.onButtonTap(function() {
-          exitRead(View.enterView);
-        });
-        $("#read").prepend(back)
         callback();
       }
     });
@@ -53,9 +50,15 @@ module Read {
   export var exitRead = function(callback ?: () => void) : void {
     callback = callback || function() { };
     $("#read").css('display', 'none');
-    $("#read").empty();
+    $("#readList").empty();
     callback();
   };
 
+
+  $(window).on('load', function() {
+    $("#readBack").onButtonTap(function() {
+      exitRead(View.enterView);
+    });
+  });
 
 }

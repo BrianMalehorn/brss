@@ -47,6 +47,8 @@ module Add {
     callback = callback || function() { };
     Misc.changeHash("#add");
     $("#add").css('display', 'block');
+    // empty the search box and put the cursor on it
+    $("#searchBox").val("").focus();
 
     // for some reason, it only works to hammerfy button when they're visible
     // or something. Has to be put in this function
