@@ -1,6 +1,7 @@
 ========================
 = todo
 ========================
+- main.ts, not brss.ts
 - loading wheels everywhere. In between every transition.
 - have "Brss" at the top
 - on desktop, buttons have a max width

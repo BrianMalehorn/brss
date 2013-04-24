@@ -4,7 +4,8 @@ RMFLAGS=-f
 
 COMMON_SOURCES=interfaces.ts
 SERVER_SOURCES=server.ts database.ts utilities.ts
-STATIC_SOURCES=static/brss.ts
+STATIC_SOURCES=static/brss.ts static/definitions.ts static/view.ts \
+				static/edit.ts static/add.ts static/read.ts
 
 SERVER_MAPS=$(SERVER_SOURCES:.ts=.js.map)
 SERVER_JS=$(SERVER_SOURCES:.ts=.js)
