@@ -9,6 +9,7 @@
 - add and remove buttons should look significantly different than feed
 - on #add, if you give direct link to rss .xml, still works
 - import feeds (from Google Reader export)
+- make "user is null" redirect to login page or something
 
 
 ========================
