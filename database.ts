@@ -50,6 +50,17 @@ declare var getSomeItems : (feedId : string,
                             callback : (err, items ?: I.DbItem[]) => void)
                         => void;
 
+/* Given a feed, returns n items with a date later than the one given. It may
+ * return fewer than n items without an error if there aren't more than n items
+ * remaining. */
+declare var nextNItems : (feedId : string, date : number, n : number,
+                          callback : (err, items ?: I.DbItem[]) => void)
+                      => void;
+
+/* Get an item just by ID. */
+declare var getItem : (itemId : string,
+                       callback : (err, item ?: I.DbItem) => void) => void;
+
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
 declare var start : (callback ?: Function) => void;
@@ -468,9 +479,26 @@ export var getSomeItems = function(feedId : string,
                                    callback : (err, items ?: I.DbItem[]) =>void)
 : void {
   db.items.find({feedId: new mongo.ObjectID(feedId)})
-    .sort({date: 1})
-    .limit(10)
+    .sort({date: -1})
+    .limit(3)
     .toArray(callback);
+};
+
+export var nextNItems = function(feedId : string, date : number, n : number,
+                                 callback : (err, items ?: I.DbItem[]) => void)
+: void {
+  db.items.find({feedId: new mongo.ObjectID(feedId),
+                 date: {$lt: date}})
+    .sort({date: -1})
+    .limit(n)
+    .toArray(callback);
+};
+
+
+export var getItem = function(itemId : string,
+                              callback : (err, item ?: I.DbItem) => void)
+: void {
+  db.items.findOne({itemId: new mongo.ObjectID(itemId)}, callback);
 };
 
 

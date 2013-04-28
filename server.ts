@@ -90,6 +90,11 @@ app.get("/auth/facebook/callback",
  * listeners
  ********************************************************************/
 
+
+/////////////////////////////////////////////////
+// GET
+/////////////////////////////////////////////////
+
 /* Find the current user's feeds and send them back */
 app.get("/gimmie-my-feeds", function(request, response) {
   var brssId : string = request.user;
@@ -116,6 +121,30 @@ app.get("/gimmie-some-items", function(request, response) {
   });
 });
 
+app.get("/get-item", function(request, response) {
+  var itemId : string = request.query.itemId;
+  database.getItem(itemId, function(err, item ?: I.DbItem) {
+    util.throwIt(err);
+    response.send(JSON.stringify(item));
+  });
+});
+
+app.get("/next-n-items", function(request, response) {
+  var feedId : string = request.query.feedId;
+  var date : number = _.parseInt(request.query.date);
+  var n : number = _.parseInt(request.query.n);
+  util.assert(feedId !== undefined && date !== undefined && n !== undefined);
+  util.pp({feedId: feedId, date: date, n: n}, "nextNItemsData");
+  // console.log("next n items: +
+  database.nextNItems(feedId, date, n, function(err, items ?: I.DbItem[]) {
+    util.throwIt(err);
+    response.send(JSON.stringify(items));
+  });
+});
+
+/////////////////////////////////////////////////
+// POST
+/////////////////////////////////////////////////
 
 /* Find all feeds at the given url, add them to the current user, and send
    the found feeds back to the user. */
@@ -132,6 +161,9 @@ app.post("/add-feeds", function(request, response) {
   });
 });
 
+/////////////////////////////////////////////////
+// DELETE
+/////////////////////////////////////////////////
 
 /* Delete the feeds from the current user. */
 app.del("/delete-these-feeds", function(request, response) {

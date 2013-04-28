@@ -113,3 +113,7 @@ p {
 .bad {
     background-color: #ab4d53;
 }
+
+img {
+    max-width: 100%;
+}
