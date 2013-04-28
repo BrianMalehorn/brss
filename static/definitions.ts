@@ -32,6 +32,16 @@ module Misc {
 
   var hashChangeWasMine : bool = false;
   var oldHash : string = "#_=_";
+
+  export var assert = function(b : bool, msg ?: string) : void {
+    if (!msg) {
+      msg = "assertion error";
+    }
+    if (!b) {
+      throw msg;
+    }
+  };
+
   export var changeHash = function(hash : string) : void {
     hashChangeWasMine = true;
     window.location.hash = hash;
@@ -91,5 +101,6 @@ module Misc {
     };
 
   });
+
 
 }
