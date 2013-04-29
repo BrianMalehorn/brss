@@ -14,19 +14,39 @@ body {
     color: white;
 }
 
-div {
+/* "Tap-able" elements should all look similar */
+.button, .buttonDown, .subscription, .keeper, .bad {
     padding-top: 0.7em;
     padding-bottom: 0.7em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 0.8em;
+    /* turn off the annoying highlight on a tap*/
+    -webkit-tap-highlight-color: transparent;
+    -moz-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
+#keepList, #subscriptionList {
+    margin-bottom: 1.5em;
+}
+
+#addHeader {
+    margin-top: 1.0em;
+}
+
+#searchBox {
+    margin-top: 1.3em;
+    margin-bottom: 1.3em;
+}
 
 .button {
-    padding-top: 1em;
-    padding-bottom: 1em;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
     background-color: #575757;
 }
 
@@ -39,26 +59,10 @@ div {
     background-color: white;
 }
 
-.subscription, .button, .keeper, .bad {
-    border-radius: 0.8em;
-    /* turn off the annoying highlight on a tap*/
-    -webkit-tap-highlight-color: transparent;
-    -moz-tap-highlight-color: transparent;
-    tap-highlight-color: transparent;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
 .subscription, .button, .keeper, .bad:hover {
     cursor: pointer;
 }
 .subscription {
-    padding-top: 0.7em;
-    padding-bottom: 0.7em;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
     background-color: #828282;
 }
 
@@ -88,6 +92,8 @@ div {
 
 h3 {
     font-size: 100%;
+    margin-top: 0.6em;
+    margin-bottom: 0.6em;
 }
 
 .itemDescription {
@@ -96,7 +102,7 @@ h3 {
     font-size: 60%;
 }
 
-p {
+p, .itemDescription > div {
     padding-top: 0.3em;
     padding-bottom: 0.3em;
 }
@@ -117,4 +123,21 @@ p {
 img {
     max-width: 100%;
     height: auto;
+}
+
+#readBack {
+    margin-top: 1.0em;
+    margin-bottom: 1.0em;
+}
+
+@media only screen and (min-width : 600px) {
+
+    .button, .buttonDown, .subscription, .keeper, .bad {
+        max-width: 600px;
+    }
+
+    /* #main { */
+    /*     background-color: green; */
+    /* } */
+
 }

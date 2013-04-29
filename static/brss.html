@@ -1,7 +1,15 @@
 <!doctype html>
 <html>
   <head>
+
+    <script src="http://jsconsole.com/remote.js?E1979DE4-9B0F-4FD5-9AD0-520CEC651AF2"></script>
+
+    <script type="text/javascript">
+      console.log("@ 1");
+    </script>
+
     <script type="text/javascript" src="jquery-1.9.1.js"></script>
+
     <script type="text/javascript" src="addTappableJQPlugin.js"></script>
     <script type="text/javascript" src="jquery.inview.js"></script>
     <script type="text/javascript" src="lodash.js"></script>
@@ -12,6 +20,20 @@
     <script type="text/javascript" src="add.js"></script>
     <script type="text/javascript" src="read.js"></script>
     <script type="text/javascript" src="main.js"></script>
+
+
+    <script type="text/javascript">
+      console.log("@ 2");
+    </script>
+
+
+    <!-- <script type="text/javascript"> -->
+    <!--   window.onload = function() { -->
+    <!--   var lumberjack = $("<div>"); -->
+    <!--     $("body").append(lumberjack); -->
+    <!--     lumberjack.append("Hello, world!"); -->
+    <!--     }; -->
+    <!-- </script> -->
 
 	<link rel="stylesheet" type="text/css" href="reset.css">
 	<link rel="stylesheet" type="text/css" href="brss.css">
@@ -41,7 +63,9 @@
     </div>
 
     <div id="add">
-      Type the name of a website with an RSS feed.
+      <div id="addHeader">
+        Type the name of a website with an RSS feed.
+      </div>
       <input id="searchBox" type="url" placeholder="e.g. nytimes.com"/>
       <div id="addButton" class="button">add</div>
     </div>
@@ -49,6 +73,8 @@
     <div id="read">
       <div id="readBack" class="button">back</div>
       <div id="readList">
+      </div>
+      <div id="readFooter">
       </div>
     </div>
 

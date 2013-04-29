@@ -115,7 +115,7 @@ var glob : Glob = {isUpdating: false};
 var c : Constants = {
   // how often, in MS, I attempt an update
   // END: set to something smaller, like 60 * 1000
-  UPDATE_INTERVAL: 1000000 * 1000,
+  UPDATE_INTERVAL: 20 * 1000 * 60,
   SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
   SALT_LENGTH: 50,
 };
@@ -329,7 +329,7 @@ var updateEverything = function() : void {
     for (var i = 0; i < dbFeeds.length; i++) {
       updateItems(dbFeeds[i], function(err) {
         releaseIfFinished();
-        util.throwIt(err);
+        util.logIt(err);
       });
     }
   });

@@ -21,27 +21,28 @@ module Read {
   declare var emptyDiv : (JQuery) => void;
   declare var insertItems : (items : ClItem[]) => void;
 
-  var feedIdThatLoadsMoreItems : string = "";
+  var triggerFeedDate : number = 0;
 
   // given a div with div.data("self") being an item, empties it out and fills
   // its contents with the contents of item.
   var fillDiv = function(div : JQuery) : void {
     var item : ClItem = div.data("self");
-    (div
-     .empty()
-     .append($("<h3>") // title
-             .append($("<a>")
-                     .attr('href', item.url)
-                     .attr('target', '_blank')
-                     .text(item.title)))
-     .append($("<div>") // description
-             .html(item.description)
-             .addClass('itemDescription'))
-     .addClass('itemContainer'));
+      (div
+       .empty()
+       .append($("<h3>") // title
+               .append($("<a>")
+                       .attr('href', item.url)
+                       .attr('target', '_blank')
+                       .text(item.title)))
+       .append($("<div>") // description
+               .html(item.description)
+               .addClass('itemDescription'))
+       .addClass('itemContainer'));
   };
 
   var emptyDiv = function(div : JQuery) : void {
     // fix the height of the div so when you empty it, its size doesn't change
+    div.css('height', 'auto');
     div.height(div.height());
     div.empty();
   };
@@ -49,6 +50,14 @@ module Read {
   // Put all these items into #readList, setting all the extra insertion
   // stuff as well.
   var insertItems = function(items : ClItem[]) : void {
+
+    if (items.length === 0) {
+      $("#readFooter")
+        .empty()
+        .append($("<h3>").text("That's all, folks!"))
+        .append($("#readBack").clone().onButtonTap(onBack));
+      return;
+    }
 
     var divs : JQuery[] = [];
 
@@ -65,7 +74,7 @@ module Read {
     if (containers.length == 0)
       return;
     var index : number = containers.length - 1 - NTH_LAST;
-    feedIdThatLoadsMoreItems = $(containers[index]).data("self")._id;
+    triggerFeedDate = $(containers[index]).data("self").date;
 
     // for every div, make it hide/show itself when scrolled
     // over. Additionally, if it is The Feed That Shall Bring Others, it
@@ -81,14 +90,15 @@ module Read {
           emptyDiv(div);
         }
 
-        if (isInView && item._id === feedIdThatLoadsMoreItems) {
+        if (item.date <= triggerFeedDate) {
           // if this ajax call takes a while, get rid of
-          // feedIdThatLoadsMoreItems so that more re-scrolls don't load more
+          // rtriggerFeedDate so that more re-scrolls don't load more
           // and more items while you're waiting
-          feedIdThatLoadsMoreItems = "";
+          triggerFeedDate = 0;
           var allDivs : JQuery = $(".itemContainer");
           Misc.assert(allDivs.length > 0);
           var lastItem : ClItem = $(allDivs[allDivs.length-1]).data("self");
+          $("#readFooter").append($("#loaderImage").clone());
           $.ajax({
             type: 'get',
             url: "/next-n-items",
@@ -98,6 +108,7 @@ module Read {
               n: NUM_ADDITIONAL_ITEMS,
             },
             success: function(data : string) {
+              $("#readFooter").empty();
               var items : ClItem[] = JSON.parse(data);
               insertItems(items);
             },
@@ -150,10 +161,12 @@ module Read {
   };
 
 
+  var onBack = function() {
+    exitRead(View.enterView);
+  };
+
   $(window).on('load', function() {
-    $("#readBack").onButtonTap(function() {
-      exitRead(View.enterView);
-    });
+    $("#readBack").onButtonTap(onBack);
   });
 
 }

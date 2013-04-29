@@ -3,9 +3,25 @@ export var throwIt = function(err : any) : void {
     throw err;
 };
 
+// copied from
+//http://www.codeovertones.com/2011/08/how-to-print-stack-trace-anywhere-in.html
 export var logIt = function(err : any) : void {
-  if (err)
-    console.log(err);
+  if (err) {
+    // make e an actual err, in case err is just a string
+    var e;
+    if (typeof(err) === "string") {
+      e = new Error(err);
+    } else {
+      e = err;
+    }
+    var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+      .replace(/^\s+at\s+/gm, '')
+      .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
+      .split('\n');
+    console.log();
+    console.log(stack);
+    console.log();
+  }
 };
 
 export var sify = function(obj : any) : string {

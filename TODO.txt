@@ -2,7 +2,6 @@
 = todo
 ========================
 - have "Brss" at the top
-- on desktop, buttons have a max width
 - when you add a feed, make it obvious which feeds were added (or if they were
   already there)
 - make your subscriptions obvious: "Hi ___, here are your subscriptions"
@@ -10,12 +9,14 @@
 - on #add, if you give direct link to rss .xml, still works
 - import feeds (from Google Reader export)
 - make "user is null" redirect to login page or something
+- make div's not have their own css (should be css on a class)
 
 
 ========================
 = endgame
 ========================
 - minify everything into one .js with yuicompressor
+- on desktop, buttons have a max width
 
 
 ========================

@@ -47,8 +47,8 @@ module View {
         });
 
         $("#subscriptionList").empty();
-        for (var _id in Misc.feeds) {
-          var feed : ClFeed = Misc.feeds[_id];
+        _.values(Misc.feeds).forEach(function(feed : ClFeed) {
+          // var feed : ClFeed = Misc.feeds[_id];
           var div = ($('<div>')
                      .addClass('subscription')
                      // TODO: remove id thing. I don't think I ever
@@ -56,16 +56,13 @@ module View {
                      .attr('id', feed._id)
                      .text(feed.title));
           // if they click on this div, they should try to go read it
-          (function(){
-            var _feed = feed;
-            div.onButtonTap(function() {
-              exitView(function() {
-                Read.enterRead(_feed);
-              });
+          div.onButtonTap(function() {
+            exitView(function() {
+              Read.enterRead(feed);
             });
-          })();
+          });
           $("#subscriptionList").append(div);
-        }
+        });
 
         lastly();
       }
@@ -88,13 +85,17 @@ module View {
   $(window).on('load', function() {
     // and make it so when they click on the buttons at the
     // bottom, they can actually
+
     $('#addSubscription').onButtonTap(function() {
       // turn the lights off on your way out
       View.exitView(Add.enterAdd);
     });
+
     $('#editSubscription').onButtonTap(function() {
       View.exitView(Edit.enterEdit);
     });
+
+
   });
 
 }

@@ -8,6 +8,7 @@ function addTappableJQPlugin(){
             this.removeClass('buttonDown');
         };
         this.ontap(down, up, tapCB, longCB);
+        return this;
     }
 
     $.fn.ontap = function(downCB, upCB, tapCB, longCB){
@@ -122,7 +123,21 @@ function addTappableJQPlugin(){
     }
 }
 
+// Brian: copied from http://www.cs.cmu.edu/~237/handouts/mobileuinotes.html
+// iOS5 or less does not have .bind so add it if needed (iOS6 has it!)
+function patchBind(){
+    if (Function.prototype.bind === undefined){
+        Function.prototype.bind = function (newScope) {
+            var self = this;
+            return function () {
+                var args = Array.prototype.slice.call(arguments);
+                return self.apply(newScope || null, args);
+            };
+        };
+    }
+}
 
 window.addEventListener('load', function(){
+    patchBind();
     addTappableJQPlugin();
 });
