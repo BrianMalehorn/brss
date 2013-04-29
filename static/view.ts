@@ -27,6 +27,10 @@ module View {
       data: {
       },
       success: function(data : string) {
+        if (data === Misc.NO_ID) {
+          window.location.href = Misc.FACEBOOK_LOGIN_URL;
+          return;
+        }
         Misc.user = JSON.parse(data);
         lastly();
       }
@@ -38,6 +42,11 @@ module View {
       data: {
       },
       success: function(data : string) {
+        if (data === Misc.NO_ID) {
+          window.location.href = Misc.FACEBOOK_LOGIN_URL;
+          return;
+        }
+
         // cool, now we have the feeds array. Add it to the DOM.
         var unsorted : ClFeed[] = JSON.parse(data);
         var feeds : ClFeed[] = _.sortBy(unsorted, (f : ClFeed) => f.title);
@@ -51,9 +60,6 @@ module View {
           // var feed : ClFeed = Misc.feeds[_id];
           var div = ($('<div>')
                      .addClass('subscription')
-                     // TODO: remove id thing. I don't think I ever
-                     // use it
-                     .attr('id', feed._id)
                      .text(feed.title));
           // if they click on this div, they should try to go read it
           div.onButtonTap(function() {

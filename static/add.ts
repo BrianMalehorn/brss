@@ -28,6 +28,10 @@ module Add {
           url: siteUrl
         },
         success: function(data) {
+          if (data === Misc.NO_ID) {
+            window.location.href = Misc.FACEBOOK_LOGIN_URL;
+            return;
+          }
           // data is a JSON-encoded version of the feeds you added
           var feeds : ClFeed[] = JSON.parse(data);
           // a quick hack to make it obvious that I couldn't find anything.

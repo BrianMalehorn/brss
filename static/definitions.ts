@@ -26,6 +26,9 @@ module Read {
 
 module Misc {
 
+  export var NO_ID : string = "NO ID";
+  export var FACEBOOK_LOGIN_URL : string = "/auth/facebook";
+
   export declare var lastFeed : ClFeed;
   export declare var feeds : {[_id: string]: ClFeed;};
   export declare var user : ClUser;

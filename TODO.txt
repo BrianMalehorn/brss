@@ -7,17 +7,15 @@
 - make your subscriptions obvious: "Hi ___, here are your subscriptions"
 - add and remove buttons should look significantly different than feed
 - on #add, if you give direct link to rss .xml, still works
-- import feeds (from Google Reader export)
-- make "user is null" redirect to login page or something
-- make div's not have their own css (should be css on a class)
-
+- if you can't find any link[type='application/rss+xml'], search for
+  an <a> with "rss" in its href, or rss or RSS as its content
 
 ========================
 = endgame
 ========================
 - minify everything into one .js with yuicompressor
-- on desktop, buttons have a max width
-
+- import feeds (from Google Reader export)
+- grep -r "TODO" ./
 
 ========================
 = done
@@ -39,3 +37,7 @@
 - put everything in separate files
 - loading wheels everywhere. In between every transition.
 - images are scaled to div width
+- make div's not have their own css (should be css on a class)
+- on desktop, buttons have a max width
+- make "user is null" redirect to login page or something
+- on add feed, don't fetch update for feed unless it's new

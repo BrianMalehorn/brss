@@ -98,6 +98,10 @@ app.get("/auth/facebook/callback",
 /* Find the current user's feeds and send them back */
 app.get("/gimmie-my-feeds", function(request, response) {
   var brssId : string = request.user;
+  if (!brssId) {
+    response.send("NO ID");
+    return;
+  }
   database.getUserFeeds(brssId, function(err, feeds ?: I.DbFeed[]) {
     util.throwIt(err);
     response.send(JSON.stringify(feeds));
@@ -106,6 +110,10 @@ app.get("/gimmie-my-feeds", function(request, response) {
 
 app.get("/who-am-i-where-am-i", function(request, response) {
   var brssId : string = request.user;
+  if (!brssId) {
+    response.send("NO ID");
+    return;
+  }
   database.getUser(brssId, function(err, user ?: I.DbUser) {
     util.throwIt(err);
     response.send(JSON.stringify(user));
@@ -150,6 +158,10 @@ app.get("/next-n-items", function(request, response) {
    the found feeds back to the user. */
 app.post("/add-feeds", function(request, response) {
   var brssId : string = request.user;
+  if (!brssId) {
+    response.send("NO ID");
+    return;
+  }
   var url : string = request.body.url;
   url = util.httpize(url);
   database.addUserFeeds(brssId, url, function(err, feeds ?: I.DbFeed[]) {
@@ -168,6 +180,11 @@ app.post("/add-feeds", function(request, response) {
 /* Delete the feeds from the current user. */
 app.del("/delete-these-feeds", function(request, response) {
   var brssId : string = request.user;
+
+  if (!brssId) {
+    response.send("NO ID");
+    return;
+  }
   var feedIds : string[] = request.body.feedIds;
   util.pp(feedIds, "feedIds");
   database.deleteUserFeeds(brssId, feedIds, function(err) {

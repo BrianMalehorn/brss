@@ -17,7 +17,9 @@ module Edit {
       (function(){
         var feed = Misc.feeds[_id];
         // each one will have a div with a checkbox and some text inside
-        var div = $('<div>').addClass('keeper').attr('id', feed._id);
+        var div = $('<div>')
+          .addClass('keeper')
+          .data("id", feed._id);
         var checkbox = $('<input>')
           .attr('type', 'checkbox')
           .prop('checked', false);
@@ -53,7 +55,7 @@ module Edit {
       // you need to get these out ahead of time, before exitEdit
       // removes them
       var bads = $(".keeper.bad");
-      var badIds : string[] = _.map(bads, (e) => e.id);
+      var badIds : string[] = _.map(bads, (e) => $(e).data("id"));
       exitEdit(function() : void {
         $.ajax({
           type: 'delete',
@@ -62,6 +64,10 @@ module Edit {
             feedIds: badIds
           },
           success: function(data) {
+            if (data === Misc.NO_ID) {
+              window.location.href = Misc.FACEBOOK_LOGIN_URL;
+              return;
+            }
             View.enterView();
           }
         });

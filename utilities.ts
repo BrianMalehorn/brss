@@ -49,6 +49,11 @@ export var pass = function(...args : any[]) : any {
 };
 
 export var httpize = function(url : string) : string {
+  url = url.toLowerCase();
+  url = url.replace(/ */g, "");
+  if (url.indexOf(".") === -1) {
+    url = url + ".com"
+  }
   if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
     url = "http://" + url;
   }

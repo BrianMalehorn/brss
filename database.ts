@@ -61,6 +61,11 @@ declare var nextNItems : (feedId : string, date : number, n : number,
 declare var getItem : (itemId : string,
                        callback : (err, item ?: I.DbItem) => void) => void;
 
+/* Given an RSS url like http://xkcd.com/rss.xml, downloads the page and adds the feed to the database, if not already there. */
+declare var addFeedFromRssUrl : (rssUrl : string,
+                                 callback ?: (err, feed ?: I.DbFeed) => void)
+                        => void;
+
 /* Start the actual server (boot up the database and set the timeout on
    updating the database */
 declare var start : (callback ?: Function) => void;
@@ -115,7 +120,7 @@ var glob : Glob = {isUpdating: false};
 var c : Constants = {
   // how often, in MS, I attempt an update
   // END: set to something smaller, like 60 * 1000
-  UPDATE_INTERVAL: 20 * 1000 * 60,
+  UPDATE_INTERVAL: 0.2 * 1000 * 60,
   SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
   SALT_LENGTH: 50,
 };
@@ -183,50 +188,51 @@ var updateItems = function(feed : I.DbFeed, callback ?: Function) {
 /* Given a url like "http://xkcd.com/rss.xml", adds the the feed to the server
    (if it's not already there) and updates all of its elements and if callback
    is given, calls it. */
-var updateFeed = function(url : string,
+var updateFeed = function(rssUrl : string,
                           callback ?: (err, feed ?: I.DbFeed) => void) {
   if (!callback) callback = util.throwIt;
 
-  url = util.httpize(url);
-  console.log("update feed: " +  util.sify(url));
+  console.log("update feed: " +  util.sify(rssUrl));
 
-  db.feeds.find({url: url}).toArray(function(err, feeds : I.DbFeed[]) {
+  addFeedFromRssUrl(rssUrl, function(err, feed ?: I.DbFeed) {
     if (err) return callback(err);
+    updateItems(feed, function(err) {
+      if (err) return callback(err);
+      callback(null, feed);
+    });
+  });
+};
 
-    // should never have duplicates
-    util.assert(feeds.length <= 1, "duplicate feeds: " + util.sify(url));
 
-    // if it's not there, make it!
-    if (feeds.length === 0) {
-      console.log("creating db feed: " + util.sify(url));
-      request(url)
-        .pipe(new FeedParser({}))
-        .on('error', callback)
-        .on('meta', function(feed : I.FpFeed) {
+var addFeedFromRssUrl = function(rssUrl : string,
+                                 callback ?: (err, feed ?: I.DbFeed) => void)
+: void {
 
-          var dbFeed : I.DbFeed = {
-            title: feed.title,
-            description: feed.description,
-            url: url,
-            _id: new mongo.ObjectID(),
-          };
+  db.feeds.findOne({url: rssUrl}, function(err, feed ?: I.DbFeed) {
+    if (!err && feed) {
+      return callback(null, feed);
+    }
 
-          // insert it...
-          db.feeds.insert(dbFeed, function(err) {
-            util.throwIt(err);
-            // and update all the items. You can call callback when you're done
-            updateItems(dbFeed, function(err) {
-              if (err) return callback(err);
-              callback(null, dbFeed);
-            });
+    request(rssUrl)
+      .pipe(new FeedParser({}))
+      .on('error', callback)
+      .on('meta', function(fpFeed : I.FpFeed) {
+
+        var dbFeed : I.DbFeed = {
+          title: fpFeed.title,
+          description: fpFeed.description,
+          url: rssUrl,
+          _id: new mongo.ObjectID(),
+        };
+
+        db.feeds.insert(dbFeed, function(err) {
+          if (err) return callback(err);
+          updateItems(dbFeed, function(err) {
+            if (err) return callback(err);
+            callback(null, dbFeed);
           });
         });
-    } else {
-      // otherwise, it's already there, so just update it
-      updateItems(feeds[0], function(err) {
-        callback(err, feeds[0]);
       });
-    }
   });
 };
 
@@ -235,7 +241,8 @@ var updateFeed = function(url : string,
    server */
 export var addBySiteUrl = function(url : string,
                                    callback ?: (err, feeds ?: I.DbFeed[])
-                                   => void) : void {
+                                   => void)
+: void {
   if (!callback) {
     callback = util.throwIt;
   }
@@ -276,22 +283,29 @@ export var addBySiteUrl = function(url : string,
         callback(null, feeds);
       });
 
-      // TODO: if the feed already exist, don't bother updating it
-
       // get each rss, inserting each one into feeds
-      for (var i = 0; i < rssUrls.length; i++) {
-        (function() {
-          var j = i;
-          updateFeed(rssUrls[j], function(err, feed ?: I.DbFeed) {
-            if (err) return callback(err);
-            feeds[j] = feed;
-            lastly();
-          });
-        })();
-      }
+      _.range(rssUrls.length).forEach(function(i : number) {
+        // try to look it up in the database
+        db.feeds.findOne({url: rssUrls[i]}, function(err, feed ?: I.DbFeed) {
+          // if you couldn't find it in the database, go download it and
+          // update it
+          if (err || !feed) {
+            util.pp(rssUrls, "rssUrls");
+            util.pp(i, "i");
 
-      // var rssUrl : string = $("link[type='application/rss+xml']")[0].href;
-      // updateFeed(rssUrl, callback);
+            updateFeed(rssUrls[i], function(err, downloadedFeed ?: I.DbFeed) {
+              if (err) return callback(err);
+              feeds[i] = downloadedFeed;
+              lastly();
+            });
+          } else {
+            // otherwise, you found it, so no need to download it
+            feeds[i] = feed;
+            lastly();
+          }
+        });
+      });
+
     });
   });
 };
@@ -408,7 +422,13 @@ export var getFbUser = function(fbUser : I.FbUser,
 export var getUser = function(brssId : string,
                               callback : (err, user ?: I.DbUser) => void)
 : void {
-  db.users.findOne({brssId: brssId}, callback);
+  db.users.findOne({brssId: brssId}, function(err, user ?: I.DbUser) {
+    if (err || !user) {
+      callback(err || !user);
+    } else {
+      callback(null, user);
+    }
+  });
 }
 
 
@@ -417,7 +437,7 @@ export var getUserFeeds = function(brssId : string,
                                                feeds ?: I.DbFeed[]) => void)
 : void {
   db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
-    if (err) return callback(err);
+    if (err || !user) return callback(err || !user);
     if (user === null) return callback("user is null!");
     db.feeds.find({_id: {$in: user.feedIds}}).toArray(callback);
   });
@@ -427,28 +447,53 @@ export var addUserFeeds = function(brssId : string, url : string,
                                    callback : (err, feeds ?: I.DbFeed[]) => void
 ) : void {
   db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
-    if (err) return callback(err);
+    if (err || !user) return callback(err || !user);
+
     // TODO: figure out how to remove exports
     exports.addBySiteUrl(url, function(err, feeds ?: I.DbFeed[]) {
       if (err) return callback(err);
-      // make a new version of the user, add on the new feeds,
-      // and add it back
 
-      // it's important to do a non-deep clone, or else it will mess up
-      // mongo.ObjectID
-      var newUser : I.DbUser = _.clone(user);
-      var newIds = _.pluck(feeds, '_id');
-      var eachToString = (a) => _.map(a, (e) => e.toString());
-      // turn them into strings, take their union, then map them back to
-      // ObjectID's
-      newUser.feedIds =
-        _.map(
-          _.union(
-            eachToString(user.feedIds), eachToString(newIds)),
-          (s : string) => new mongo.ObjectID(s));
-      db.users.update({brssId: user.brssId}, newUser, function(err) {
-        callback(err, feeds);
-      });
+      // needed function due to duplicated code
+      var gotMeMyFeeds = function(feeds : I.DbFeed[]) : void {
+
+        // there actually were some feeds! Make a new version of the
+        // user, add on the new feeds, and insert it back into the db
+
+        // must be non-deep clone: deep messes up mongo.ObjectID
+        var newUser : I.DbUser = _.clone(user);
+        var newIds = _.map(feeds, (feed) => feed._id);
+        var eachToString = (a) => _.map(a, (e) => e.toString());
+        // turn them into strings, take their union, then map them back to
+        // ObjectID's
+        newUser.feedIds =
+          _.map(
+            _.union(
+              eachToString(user.feedIds), eachToString(newIds)),
+            (s : string) => new mongo.ObjectID(s));
+        db.users.update({brssId: user.brssId}, newUser, function(err) {
+          callback(err, feeds);
+        });
+      };
+
+      if (feeds.length !== 0) {
+        gotMeMyFeeds(feeds);
+      } else {
+        // So we found nothing at foo.com. Maybe it's actually an rss url?
+        addFeedFromRssUrl(url, function(err, feed ?: I.DbFeed) {
+          // util.pp(err, "err");
+          // util.pp(feed, "feed");
+          if (err) {
+            // crap, didn't find anything treating foo.com as a website and
+            // didn't find anything treating it as an rss feed. Give up.
+            callback(null, []);
+          } else {
+            // otherwise, replace our empty list with this feed and procees
+            // like nothing ever happened
+            gotMeMyFeeds([feed]);
+          }
+        });
+      }
+
     });
   });
 };
@@ -457,7 +502,7 @@ export var deleteUserFeeds = function(brssId : string, badIds : string[],
                                       callback : (err : any) => void)
 : void {
   db.users.findOne({brssId: brssId}, function(err, user : I.DbUser) {
-    if (err) return callback(err);
+    if (err || !user) return callback(err || !user);
     // make a new user, with user.feedIds not containing any of badIds
     var newUser : I.DbUser = _.clone(user);
     var eachToString = (a) => _.map(a, (e) => e.toString());
@@ -498,7 +543,12 @@ export var nextNItems = function(feedId : string, date : number, n : number,
 export var getItem = function(itemId : string,
                               callback : (err, item ?: I.DbItem) => void)
 : void {
-  db.items.findOne({itemId: new mongo.ObjectID(itemId)}, callback);
+  db.items.findOne({itemId: new mongo.ObjectID(itemId)},
+                   function(err, item ?: I.DbItem) {
+                     if (err || !item) return callback(err || !item);
+                     callback(null, item);
+
+                   });
 };
 
 
