@@ -120,7 +120,7 @@ var glob : Glob = {isUpdating: false};
 var c : Constants = {
   // how often, in MS, I attempt an update
   // END: set to something smaller, like 60 * 1000
-  UPDATE_INTERVAL: 0.2 * 1000 * 60,
+  UPDATE_INTERVAL: 20 * 1000 * 60,
   SALT_STRING: "ABCDEFHGIJKLMNOPQRSTUVWXYZ",
   SALT_LENGTH: 50,
 };
@@ -191,6 +191,8 @@ var updateItems = function(feed : I.DbFeed, callback ?: Function) {
 var updateFeed = function(rssUrl : string,
                           callback ?: (err, feed ?: I.DbFeed) => void) {
   if (!callback) callback = util.throwIt;
+
+  rssUrl = util.httpize(rssUrl);
 
   console.log("update feed: " +  util.sify(rssUrl));
 

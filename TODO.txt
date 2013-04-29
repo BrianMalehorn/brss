@@ -6,9 +6,12 @@
   already there)
 - make your subscriptions obvious: "Hi ___, here are your subscriptions"
 - add and remove buttons should look significantly different than feed
-- on #add, if you give direct link to rss .xml, still works
 - if you can't find any link[type='application/rss+xml'], search for
   an <a> with "rss" in its href, or rss or RSS as its content
+- make rss items go in defined order. This means in updateItems, use
+  .on('complete'). see
+  https://github.com/danmactough/node-feedparser
+  for more
 
 ========================
 = endgame
@@ -41,3 +44,4 @@
 - on desktop, buttons have a max width
 - make "user is null" redirect to login page or something
 - on add feed, don't fetch update for feed unless it's new
+- on #add, if you give direct link to rss .xml, still works
