@@ -26,6 +26,7 @@ module Read {
 
 module Misc {
 
+  console.log("@ 1");
   export var NO_ID : string = "NO ID";
   export var FACEBOOK_LOGIN_URL : string = "/auth/facebook";
 
@@ -130,5 +131,6 @@ module Misc {
 
   });
 
+  console.log("@ 10");
 
 }
