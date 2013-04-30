@@ -71,7 +71,7 @@ module Read {
 
     // now that you've added some, select which feed should load more items
     var containers : JQuery = $(".itemContainer");
-    if (containers.length == 0)
+    if (containers.length === 0)
       return;
     var index : number = containers.length - 1 - NTH_LAST;
     triggerFeedDate = $(containers[index]).data("self").date;
@@ -118,21 +118,22 @@ module Read {
 
       div.bind('inview', onViewChange);
 
-      // $(window).one('scroll', function() {
-      //   console.log(div.data("inview"));
-      //   // onViewChange(null, div.data("inview"));
-      // });
-
     });
   };
 
+
+
   export var enterRead = function(feed : ClFeed, callback ?: () => void) {
     callback = callback || function() { };
-    $("#read").css('display', 'block');
-    Misc.changeHash("#read");
+    $("#read")
+      // .css('display', 'block')
+      .removeClass("hiddenRight")
+      .one('webkitTransitionEnd', function() {
+        Misc.changeHash("#read");
+      });
+
     Misc.lastFeed = feed;
 
-    $("#read").css('display', 'block');
     $("#readList").append($("#loaderImage").clone());
 
     $.ajax({
@@ -155,14 +156,20 @@ module Read {
 
   export var exitRead = function(callback ?: () => void) : void {
     callback = callback || function() { };
-    $("#read").css('display', 'none');
-    $("#readList").empty();
-    callback();
+    $("#read")
+      .addClass("hiddenRight")
+      .one('webkitTransitionEnd', function() {
+        $("#readList").empty();
+        // $("#read").css('display', 'none');
+        callback();
+      });
   };
 
 
   var onBack = function() {
-    exitRead(View.enterView);
+    exitRead(null);
+    View.enterView(null);
+    // exitRead(View.enterView);
   };
 
   $(window).on('load', function() {

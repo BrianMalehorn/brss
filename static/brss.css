@@ -8,6 +8,10 @@ body {
     padding: 1em;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
+    /* I store a lot of stuff over on the right side of the screen that
+       I don't want them to see
+     */
+    overflow-x: hidden;
 }
 
 #login {
@@ -72,7 +76,7 @@ body {
 }
 
 /* Initially, these should all not display */
-#edit, #add, #read, #loader {
+#loader {
     display: none;
 }
 
@@ -128,6 +132,69 @@ img {
 #readBack {
     margin-top: 1.0em;
     margin-bottom: 1.0em;
+}
+
+#logo {
+    max-height: 5.0em;
+}
+
+/* Copied from
+   https://github.com/es92/CrossPlatformTodoApp/blob/master/static/mobile/css/style.css
+   */
+.transition {
+
+    -webkit-transition-property: left, right, top, bottom;
+    -webkit-transition-duration: 1s, 1s, 1s, 1s;
+    -webkit-transition-delay: 0s, 0s, 0s, 0s;
+
+    -moz-transition-property: left, right, top, bottom;
+    -moz-transition-duration: 1s, 1s, 1s, 1s;
+    -moz-transition-delay: 0s, 0s, 0s, 0s;
+
+    -o-transition-property: left, right, top, bottom;
+    -o-transition-duration: 1s, 1s, 1s, 1s;
+    -o-transition-delay: 0s, 0s, 0s, 0s;
+
+    /* prevents flickering and other weirdness */
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+}
+
+#modeList {
+    position: relative;
+}
+
+#view, #read, #edit, #add {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+
+#view.hiddenLeft {
+    left: -120%;
+    right: 120%;
+}
+
+#read.hiddenRight {
+    left: 120%;
+    right: -120%;
+}
+
+#edit.hiddenRight {
+    left: 120%;
+    right: -120%;
+}
+
+#add.hiddenRight {
+    left: 120%;
+    right: -120%;
 }
 
 @media only screen and (min-width : 600px) {

@@ -9,8 +9,11 @@ module Edit {
 
   export var enterEdit = function(callback ?: () => void) {
     callback = callback || function() { };
-    Misc.changeHash("#edit");
-    $("#edit").css('display', 'block');
+    $("#edit")
+      .removeClass("hiddenRight")
+      .one('webkitTransitionEnd', function() {
+        Misc.changeHash("#edit");
+      });
 
     // generate keepList's elements
     for (var _id in Misc.feeds) {
@@ -43,10 +46,12 @@ module Edit {
 
   export var exitEdit = function(callback ?: () => void) {
     callback = callback || function() { };
-    $("#edit").css('display', 'none');
-    $("#keepList").empty();
-
-    callback();
+    $("#edit")
+      .addClass("hiddenRight")
+      .one('webkitTransitionEnd', function() {
+        $("#keepList").empty();
+        callback();
+      });
   };
 
 
@@ -56,21 +61,20 @@ module Edit {
       // removes them
       var bads = $(".keeper.bad");
       var badIds : string[] = _.map(bads, (e) => $(e).data("id"));
-      exitEdit(function() : void {
-        $.ajax({
-          type: 'delete',
-          url: "/delete-these-feeds",
-          data: {
-            feedIds: badIds
-          },
-          success: function(data) {
-            if (data === Misc.NO_ID) {
-              window.location.href = Misc.FACEBOOK_LOGIN_URL;
-              return;
-            }
-            View.enterView();
+      exitEdit(null);
+      $.ajax({
+        type: 'delete',
+        url: "/delete-these-feeds",
+        data: {
+          feedIds: badIds
+        },
+        success: function(data) {
+          if (data === Misc.NO_ID) {
+            window.location.href = Misc.FACEBOOK_LOGIN_URL;
+            return;
           }
-        });
+          View.enterView(null);
+        }
       });
     });
   });

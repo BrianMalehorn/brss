@@ -55,6 +55,7 @@ module Misc {
       // if it wasn't mine (i.e. the user did it by hitting back), find out
       // where I was coming from and where I'm going to make make the swap
       if (!hashChangeWasMine) {
+
         var exit : (callback ?: () => void) => void = function() { };
         switch (oldHash) {
         case "#_=_":

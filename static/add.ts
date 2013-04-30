@@ -19,8 +19,8 @@ module Add {
   // async.
   var addSubmit = function() : void {
     var siteUrl : string = $("#searchBox").val();
+    showLoader();
     exitAdd(function() {
-      showLoader();
       $.ajax({
         type: 'post',
         url: "/add-feeds",
@@ -49,10 +49,13 @@ module Add {
 
   export var enterAdd = function(callback ?: () => void) {
     callback = callback || function() { };
-    Misc.changeHash("#add");
-    $("#add").css('display', 'block');
+    $("#add")
+      .removeClass("hiddenRight")
+      .one('webkitTransitionEnd', function() {
+        $("#searchBox").focus();
+        Misc.changeHash("#add");
+      });
     // empty the search box and put the cursor on it
-    $("#searchBox").val("").focus();
 
     // for some reason, it only works to hammerfy button when they're visible
     // or something. Has to be put in this function
@@ -69,8 +72,10 @@ module Add {
 
   export var exitAdd = function(callback ?: () => void) {
     callback = callback || function() { };
-    $("#add").css('display', 'none');
-    callback();
+    $("#searchBox").text("");
+    $("#add")
+      .addClass("hiddenRight")
+      .one('webkitTransitionEnd', callback);
   };
 
 

@@ -10,8 +10,12 @@ module View {
   // When you navigate to the subscriptionView page, you
   export var enterView = function(callback ?: () => void) {
     callback = callback || () => undefined;
-    Misc.changeHash("#view");
-    $("#view").css('display', 'block');
+    $("#view")
+      // .css('display', 'block')
+      .removeClass("hiddenLeft")
+      .one('webkitTransitionEnd', function() {
+        Misc.changeHash("#view");
+      });
 
     // after both these ajax requests, call callback
     var lastly : Function = null;
@@ -63,9 +67,8 @@ module View {
                      .text(feed.title));
           // if they click on this div, they should try to go read it
           div.onButtonTap(function() {
-            exitView(function() {
-              Read.enterRead(feed);
-            });
+            exitView(null);
+            Read.enterRead(feed, null);
           });
           $("#subscriptionList").append(div);
         });
@@ -81,11 +84,14 @@ module View {
 
   export var exitView = function(callback ?: Function) {
     callback = callback || function() { };
-    $("#view").css('display', 'none');
-    $("#subscriptionList").empty();
-    callback();
+    $("#view")
+      .addClass("hiddenLeft")
+      .one('webkitTransitionEnd', function() {
+        $("#subscriptionList").empty();
+        // $("#view").css('display', 'none');
+        callback();
+      });
   };
-
 
 
   $(window).on('load', function() {
@@ -93,14 +99,14 @@ module View {
     // bottom, they can actually
 
     $('#addSubscription').onButtonTap(function() {
-      // turn the lights off on your way out
-      View.exitView(Add.enterAdd);
+      exitView(null);
+      Add.enterAdd(null);
     });
 
     $('#editSubscription').onButtonTap(function() {
-      View.exitView(Edit.enterEdit);
+      exitView(null);
+      Edit.enterEdit(null);
     });
-
 
   });
 

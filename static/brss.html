@@ -23,37 +23,39 @@
   </head>
 
   <body>
-    <div id="view">
-      <div id="subscriptionList">
-        <!-- this contains every subscription, listed in a nice format -->
-      </div>
-      <div id="addSubscription" class="button">add subscription</div>
-      <div id="editSubscription" class="button">remove subscriptions</div>
-    </div>
-
-    <div id="edit">
-      <div id="keepList">
-        <!-- nice list of everything to remove -->
+    <!-- <img id="logo" src="brss-logo.png"></img> -->
+    <div id="modeList">
+      <div id="view" class="transition">
+        <div id="subscriptionList">
+          <!-- this contains every subscription, listed in a nice format -->
+        </div>
+        <div id="addSubscription" class="button">add subscription</div>
+        <div id="editSubscription" class="button">remove subscriptions</div>
       </div>
 
-      <div id="saveSubscription" class="button">
-        remove selected subscriptions
+      <div id="edit" class="transition hiddenRight">
+        <div id="keepList">
+          <!-- nice list of everything to remove -->
+        </div>
+        <div id="saveSubscription" class="button">
+          remove selected subscriptions
+        </div>
       </div>
-    </div>
 
-    <div id="add">
-      <div id="addHeader">
-        Type the name of a website with an RSS feed.
+      <div id="add" class="transition hiddenRight">
+        <div id="addHeader">
+          Type the name of a website with an RSS feed.
+        </div>
+        <input id="searchBox" type="url" placeholder="e.g. nytimes.com"/>
+        <div id="addButton" class="button">add</div>
       </div>
-      <input id="searchBox" type="url" placeholder="e.g. nytimes.com"/>
-      <div id="addButton" class="button">add</div>
-    </div>
 
-    <div id="read">
-      <div id="readBack" class="button">back</div>
-      <div id="readList">
-      </div>
-      <div id="readFooter">
+      <div id="read" class="transition hiddenRight">
+        <div id="readBack" class="button">back</div>
+        <div id="readList">
+        </div>
+        <div id="readFooter">
+        </div>
       </div>
     </div>
 

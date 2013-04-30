@@ -16,6 +16,14 @@
 ========================
 = endgame
 ========================
+- transitions
+- checkboxes/input look nice
+  - checkbox on left
+- bar at the top
+
+========================
+= endgame
+========================
 - minify everything into one .js with yuicompressor
 - import feeds (from Google Reader export)
 - grep -r "TODO" ./
