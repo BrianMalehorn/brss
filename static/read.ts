@@ -54,8 +54,8 @@ module Read {
     if (items.length === 0) {
       $("#readFooter")
         .empty()
-        .append($("<h3>").text("That's all, folks!"))
-        .append($("#readBack").clone().onButtonTap(onBack));
+        .append($("<h3>").text("That's all, folks!"));
+        // .append($("#readBack").clone().onButtonTap(onBack));
       return;
     }
 

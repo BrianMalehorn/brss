@@ -186,7 +186,7 @@ body {
     color: black;
     font-family: Georgia, serif;
     background-color: #dedede; /* lol, king dedede */
-    text-shadow: 0 0 0 black;
+    box-shadow: 5px 5px 5px black;
     padding: 0.6em;
     margin-bottom: 0.5em;
 }
@@ -197,6 +197,7 @@ a {
 
 h3 {
     font-size: 100%;
+    text-shadow: none;
     margin-top: 0.6em;
     margin-bottom: 0.6em;
 }
