@@ -177,8 +177,8 @@ img {
     position: relative;
 }
 
-#view, #edit, #readBack, #addHeader {
-    margin-top: 5.0em;
+#view, #edit, #readList, #addHeader {
+    margin-top: 3.5em;
 }
 
 
@@ -221,13 +221,28 @@ img {
     width: 100%;
     background-color: black;
     z-index: 1;
+    text-align: right;
 }
 
 #logo {
     float: left;
-    height: 3.0em;
+    height: 2.0em;
     width: auto;
     margin: 0.5em;
+}
+
+#logo, #header > .button {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#header > .button {
+    display: inline-block;
+    font-size: 80%;
+    margin-right: 1.0em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    text-align: center;
 }
 
 @media only screen and (min-width : 600px) {

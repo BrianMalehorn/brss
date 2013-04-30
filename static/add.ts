@@ -52,6 +52,8 @@ module Add {
   export var enterAdd = function(callback ?: () => void) {
     callback = callback || function() { };
 
+    $("#addButton").css('display', 'inline-block');
+
     Misc.showRight("#add", function() {
       $("#searchBox").focus();
       Misc.changeHash("#add");
@@ -73,6 +75,7 @@ module Add {
   export var exitAdd = function(callback ?: () => void) {
     callback = callback || function() { };
     $("#searchBox").val("");
+    $("#addButton").css('display', 'none');
     $("#add")
       .addClass("hiddenRight")
       .one('webkitTransitionEnd', function() {
@@ -93,6 +96,7 @@ module Add {
     });
 
     $("#add").css('display', 'none');
+    $("#addButton").css('display', 'none');
 
   });
 

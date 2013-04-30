@@ -9,6 +9,7 @@ module Edit {
 
   export var enterEdit = function(callback ?: () => void) {
     callback = callback || function() { };
+    $("#saveSubscription").css('display', 'inline-block');
     Misc.showRight("#edit", function() {
       Misc.changeHash("#edit");
     });
@@ -46,6 +47,7 @@ module Edit {
 
   export var exitEdit = function(callback ?: () => void) {
     callback = callback || function() { };
+    $("#saveSubscription").css('display', 'none');
     $("#edit")
       .addClass("hiddenRight")
       .one('webkitTransitionEnd', function() {
@@ -80,6 +82,7 @@ module Edit {
     });
 
     $("#edit").css('display', 'none');
+    $("#saveSubscription").css('display', 'none');
 
   });
 

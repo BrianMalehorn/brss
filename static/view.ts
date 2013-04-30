@@ -11,6 +11,9 @@ module View {
   export var enterView = function(callback ?: () => void) {
     callback = callback || () => undefined;
 
+    $("#addSubscription").css('display', 'inline-block');
+    $("#editSubscription").css('display', 'inline-block');
+
     Misc.showLeft("#view", function() {
       Misc.changeHash("#view");
     });
@@ -82,6 +85,9 @@ module View {
 
   export var exitView = function(callback ?: Function) {
     callback = callback || function() { };
+
+    $("#addSubscription").css('display', 'none');
+    $("#editSubscription").css('display', 'none');
 
     $("#view")
       .addClass("hiddenLeft")

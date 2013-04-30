@@ -8,12 +8,12 @@ module Read {
   ///////////////////////////////////////////////////
 
   // how many items to load to begin with.
-  var NUM_INITIAL_ITEMS : number = 5;
+  var NUM_INITIAL_ITEMS : number = 10;
   // how many more items to load at once
-  var NUM_ADDITIONAL_ITEMS : number = 5;
+  var NUM_ADDITIONAL_ITEMS : number = 10;
   // 0: on the last element, load more. 1: on the 2nd to last element, load
   // more.
-  var NTH_LAST : number = 4;
+  var NTH_LAST : number = 9;
 
   Misc.assert(NUM_INITIAL_ITEMS > NTH_LAST);
 
@@ -126,17 +126,10 @@ module Read {
   export var enterRead = function(feed : ClFeed, callback ?: () => void) {
     callback = callback || function() { };
 
+    $("#readBack").css('display', 'inline-block');
     Misc.showRight("#read", function() {
-      console.log("@ 3");
       Misc.changeHash("#read");
     });
-
-    // $("#read")
-    //   .css('display', 'block')
-    //   .removeClass("hiddenRight")
-    //   .one('webkitTransitionEnd', function() {
-    //     Misc.changeHash("#read");
-    //   });
 
     Misc.lastFeed = feed;
 
@@ -162,6 +155,7 @@ module Read {
 
   export var exitRead = function(callback ?: () => void) : void {
     callback = callback || function() { };
+    $("#readBack").css('display', 'none');
     $("#read")
       .addClass("hiddenRight")
       .one('webkitTransitionEnd', function() {
@@ -181,6 +175,7 @@ module Read {
   $(window).on('load', function() {
     $("#readBack").onButtonTap(onBack);
     $("#read").css('display', 'none');
+    $("#readBack").css('display', 'none');
   });
 
 }
