@@ -14,11 +14,8 @@
   for more
 
 ========================
-= endgame
+= brandon
 ========================
-- transitions
-- checkboxes/input look nice
-  - checkbox on left
 - bar at the top
 
 ========================
@@ -53,3 +50,6 @@
 - make "user is null" redirect to login page or something
 - on add feed, don't fetch update for feed unless it's new
 - on #add, if you give direct link to rss .xml, still works
+- transitions
+- checkboxes/input look nice
+- checkbox on left

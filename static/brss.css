@@ -11,6 +11,7 @@ body {
     /* I store a lot of stuff over on the right side of the screen that
        I don't want them to see */
     overflow-x: hidden;
+    padding-top: 0px;
 }
 
 #login {
@@ -34,6 +35,14 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+#searchBox {
+    border: 1px solid #5095ea;
+    box-shadow: 1px 1px 5px #5095ea;
+    height: 1.5em;
+    border-radius: 0.4em;
+    padding: 0.2em;
 }
 
 #keepList, #subscriptionList {
@@ -121,6 +130,7 @@ p, .itemDescription > div {
 
 .bad {
     background-color: #ab4d53;
+    text-decoration: line-through;
 }
 
 img {
@@ -129,7 +139,7 @@ img {
 }
 
 #readBack {
-    margin-top: 1.0em;
+    margin-top: 0em;
     margin-bottom: 1.0em;
 }
 
@@ -167,13 +177,16 @@ img {
     position: relative;
 }
 
+#view, #edit, #readBack, #addHeader {
+    margin-top: 5.0em;
+}
+
+
 #view, #read, #edit, #add {
     display: block;
     position: absolute;
     left: 0;
     right: 0;
-    top: 0;
-    bottom: 0;
 }
 
 
@@ -195,6 +208,26 @@ img {
 #add.hiddenRight {
     left: 120%;
     right: -120%;
+}
+
+/***************************************************
+ * header
+ ***************************************************/
+
+#header {
+    position: fixed;
+    top: 0em;
+    left: 0em;
+    width: 100%;
+    background-color: black;
+    z-index: 1;
+}
+
+#logo {
+    float: left;
+    height: 3.0em;
+    width: auto;
+    margin: 0.5em;
 }
 
 @media only screen and (min-width : 600px) {

@@ -10,7 +10,6 @@ module Edit {
   export var enterEdit = function(callback ?: () => void) {
     callback = callback || function() { };
     Misc.showRight("#edit", function() {
-      console.log("@ 2");
       Misc.changeHash("#edit");
     });
 
@@ -24,7 +23,9 @@ module Edit {
           .data("id", feed._id);
         var checkbox = $('<input>')
           .attr('type', 'checkbox')
-          .prop('checked', false);
+          .prop('checked', false)
+          .css('float', 'left')
+          .css('margin-left', '1.5em');
         div.onButtonTap(function() {
           // it's bad if it's checked
           div.toggleClass('bad');
