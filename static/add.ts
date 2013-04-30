@@ -19,42 +19,44 @@ module Add {
   // async.
   var addSubmit = function() : void {
     var siteUrl : string = $("#searchBox").val();
+
     showLoader();
-    exitAdd(function() {
-      $.ajax({
-        type: 'post',
-        url: "/add-feeds",
-        data: {
-          url: siteUrl
-        },
-        success: function(data) {
-          if (data === Misc.NO_ID) {
-            window.location.href = Misc.FACEBOOK_LOGIN_URL;
-            return;
-          }
-          // data is a JSON-encoded version of the feeds you added
-          var feeds : ClFeed[] = JSON.parse(data);
-          // a quick hack to make it obvious that I couldn't find anything.
-          if (feeds.length === 0) {
-            alert("No feeds found.");
-          }
-          hideLoader();
-          View.enterView(null);
+    exitAdd(null);
+
+    $.ajax({
+      type: 'post',
+      url: "/add-feeds",
+      data: {
+        url: siteUrl
+      },
+      success: function(data) {
+        if (data === Misc.NO_ID) {
+          window.location.href = Misc.FACEBOOK_LOGIN_URL;
+          return;
         }
-      });
+        // data is a JSON-encoded version of the feeds you added
+        var feeds : ClFeed[] = JSON.parse(data);
+        // a quick hack to make it obvious that I couldn't find anything.
+        if (feeds.length === 0) {
+          alert("No feeds found.");
+        }
+        hideLoader();
+        View.enterView(null);
+      }
     });
+
   };
 
   var alreadyHammerfiedAddButton = false;
 
   export var enterAdd = function(callback ?: () => void) {
     callback = callback || function() { };
-    $("#add")
-      .removeClass("hiddenRight")
-      .one('webkitTransitionEnd', function() {
-        $("#searchBox").focus();
-        Misc.changeHash("#add");
-      });
+
+    Misc.showRight("#add", function() {
+      $("#searchBox").focus();
+      Misc.changeHash("#add");
+    });
+
     // empty the search box and put the cursor on it
 
     // for some reason, it only works to hammerfy button when they're visible
@@ -62,9 +64,7 @@ module Add {
     if (!alreadyHammerfiedAddButton) {
       alreadyHammerfiedAddButton = true;
 
-      $("#addButton").onButtonTap(function() {
-        addSubmit();
-      });
+      $("#addButton").onButtonTap(addSubmit);
     }
 
     callback();
@@ -72,10 +72,13 @@ module Add {
 
   export var exitAdd = function(callback ?: () => void) {
     callback = callback || function() { };
-    $("#searchBox").text("");
+    $("#searchBox").val("");
     $("#add")
       .addClass("hiddenRight")
-      .one('webkitTransitionEnd', callback);
+      .one('webkitTransitionEnd', function() {
+        $("#add").css('display', 'none');
+        callback();
+      });
   };
 
 
@@ -88,6 +91,9 @@ module Add {
         return false;
       }
     });
+
+    $("#add").css('display', 'none');
+
   });
 
 }

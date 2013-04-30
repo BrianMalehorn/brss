@@ -9,11 +9,10 @@ module Edit {
 
   export var enterEdit = function(callback ?: () => void) {
     callback = callback || function() { };
-    $("#edit")
-      .removeClass("hiddenRight")
-      .one('webkitTransitionEnd', function() {
-        Misc.changeHash("#edit");
-      });
+    Misc.showRight("#edit", function() {
+      console.log("@ 2");
+      Misc.changeHash("#edit");
+    });
 
     // generate keepList's elements
     for (var _id in Misc.feeds) {
@@ -50,6 +49,7 @@ module Edit {
       .addClass("hiddenRight")
       .one('webkitTransitionEnd', function() {
         $("#keepList").empty();
+        $("#edit").css('display', 'none');
         callback();
       });
   };
@@ -77,6 +77,9 @@ module Edit {
         }
       });
     });
+
+    $("#edit").css('display', 'none');
+
   });
 
 }

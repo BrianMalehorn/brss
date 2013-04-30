@@ -125,12 +125,18 @@ module Read {
 
   export var enterRead = function(feed : ClFeed, callback ?: () => void) {
     callback = callback || function() { };
-    $("#read")
-      // .css('display', 'block')
-      .removeClass("hiddenRight")
-      .one('webkitTransitionEnd', function() {
-        Misc.changeHash("#read");
-      });
+
+    Misc.showRight("#read", function() {
+      console.log("@ 3");
+      Misc.changeHash("#read");
+    });
+
+    // $("#read")
+    //   .css('display', 'block')
+    //   .removeClass("hiddenRight")
+    //   .one('webkitTransitionEnd', function() {
+    //     Misc.changeHash("#read");
+    //   });
 
     Misc.lastFeed = feed;
 
@@ -160,7 +166,7 @@ module Read {
       .addClass("hiddenRight")
       .one('webkitTransitionEnd', function() {
         $("#readList").empty();
-        // $("#read").css('display', 'none');
+        $("#read").css('display', 'none');
         callback();
       });
   };
@@ -174,6 +180,7 @@ module Read {
 
   $(window).on('load', function() {
     $("#readBack").onButtonTap(onBack);
+    $("#read").css('display', 'none');
   });
 
 }

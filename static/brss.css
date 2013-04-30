@@ -9,8 +9,7 @@ body {
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
     /* I store a lot of stuff over on the right side of the screen that
-       I don't want them to see
-     */
+       I don't want them to see */
     overflow-x: hidden;
 }
 
@@ -144,8 +143,9 @@ img {
 .transition {
 
     -webkit-transition-property: left, right, top, bottom;
-    -webkit-transition-duration: 1s, 1s, 1s, 1s;
+    -webkit-transition-duration: 0.4s, 0.4s, 0.4s, 0.4s;
     -webkit-transition-delay: 0s, 0s, 0s, 0s;
+    -webkit-transform-style: preserve-3d; /* worth a shot */
 
     -moz-transition-property: left, right, top, bottom;
     -moz-transition-duration: 1s, 1s, 1s, 1s;

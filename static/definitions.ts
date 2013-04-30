@@ -45,6 +45,24 @@ module Misc {
     }
   };
 
+  var showDir = function(hiddenClass : string, selector : string,
+                         callback : () => any) {
+    $(selector).css('display', 'block');
+    _.defer(function() {
+      $(selector)
+        .removeClass(hiddenClass)
+        .one('webkitTransitionEnd', callback);
+    });
+  };
+
+  export var showRight = function(selector : string, callback : () => any) {
+    showDir("hiddenRight", selector, callback);
+  };
+
+  export var showLeft = function(selector : string, callback : () => any) {
+    showDir("hiddenLeft", selector, callback);
+  };
+
   export var changeHash = function(hash : string) : void {
     hashChangeWasMine = true;
     window.location.hash = hash;
@@ -54,7 +72,12 @@ module Misc {
     window.onhashchange = function() {
       // if it wasn't mine (i.e. the user did it by hitting back), find out
       // where I was coming from and where I'm going to make make the swap
-      if (!hashChangeWasMine) {
+      if (!hashChangeWasMine && oldHash !== window.location.href) {
+
+        console.log(window.location.href);
+        console.log(oldHash);
+        console.log(hashChangeWasMine);
+
 
         var exit : (callback ?: () => void) => void = function() { };
         switch (oldHash) {
@@ -94,7 +117,8 @@ module Misc {
         }
 
         // out with the old, then in with the new
-        exit(enter);
+        exit(null);
+        enter(null);
 
       }
 

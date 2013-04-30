@@ -10,12 +10,10 @@ module View {
   // When you navigate to the subscriptionView page, you
   export var enterView = function(callback ?: () => void) {
     callback = callback || () => undefined;
-    $("#view")
-      // .css('display', 'block')
-      .removeClass("hiddenLeft")
-      .one('webkitTransitionEnd', function() {
-        Misc.changeHash("#view");
-      });
+
+    Misc.showLeft("#view", function() {
+      Misc.changeHash("#view");
+    });
 
     // after both these ajax requests, call callback
     var lastly : Function = null;
@@ -84,13 +82,15 @@ module View {
 
   export var exitView = function(callback ?: Function) {
     callback = callback || function() { };
+
     $("#view")
       .addClass("hiddenLeft")
       .one('webkitTransitionEnd', function() {
         $("#subscriptionList").empty();
-        // $("#view").css('display', 'none');
+        $("#view").css('display', 'none');
         callback();
       });
+
   };
 
 

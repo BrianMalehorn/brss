@@ -154,7 +154,7 @@ var updateItems = function(feed : I.DbFeed, callback ?: Function) {
 
       // try to find exact match in the database
       db.items.find(
-        {url: fpItem.link, date: fpItem.date.getTime()}).toArray(
+        {url: fpItem.link}).toArray(
           function(err, a) {
             util.throwIt(err);
 
