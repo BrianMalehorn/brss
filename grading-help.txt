@@ -1,0 +1,58 @@
+~~~~~~~~~~~~~~~~~~~~
+~ Javascript (including creating your own objects with inheritance)
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~ HTML (including a reasonably wide range of techniques, such as tables, forms with form validation, etc)
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~ node.js (with or without express)
+~~~~~~~~~~~~~~~~~~~~
+
+
+~~~~~~~~~~~~~~~~~~~~
+~ CSS (including a reasonably range of techniques, such as reset, pseudo-selectors, fixed and fluid layout, transitions and animations, etc)
+~~~~~~~~~~~~~~~~~~~~
+
+God, CSS transitions make me cry blood. Did you know that window.location.hash
+affects CSS transitions? I added classes that made elements hide off-screen and
+used them to make those fancy-looking transitions.
+
+~~~~~~~~~~~~~~~~~~~~
+~ DOM manipulation
+~~~~~~~~~~~~~~~~~~~~
+All sorts of div's flying everywhere. Mostly, inserting them at the bottom, but
+also a decent amount of HTML insertion, hiding/showing blocks, fixing heights,
+etc.
+
+~~~~~~~~~~~~~~~~~~~~
+~ jQuery
+~~~~~~~~~~~~~~~~~~~~
+I don't think I ever wrote more than 30 consecutive lines of code that didn't
+have $ in them. jQuery is great.
+
+~~~~~~~~~~~~~~~~~~~~
+~ AJAX (or similar) client (consume an API)
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~ AJAX (or similar) server (provide an API)
+~~~~~~~~~~~~~~~~~~~~
+Every AJAX thing I have is written in in server.ts. They're basically all thin
+interfaces to things in database.ts of varying complexity.
+
+~~~~~~~~~~~~~~~~~~~~
+~ client-side caching and localStorage
+~~~~~~~~~~~~~~~~~~~~
+Each unloaded element still holds its HTML in the form of a string with
+$(el).data('self', myHtmlString). This means when reloading, I don't have to
+re-download.
+
+~~~~~~~~~~~~~~~~~~~~
+~ server-side databases (probably MongoDB, but any is fine)
+~~~~~~~~~~~~~~~~~~~~
+Callback in callback in callbacks. I think if you inlined the functions, it'd
+be 10 levels. I wish I used promises.
+
+~~~~~~~~~~~~~~~~~~~~
+~ Additional well-chosen technologies
+~~~~~~~~~~~~~~~~~~~~
+Typescript. Even if it didn't check types, just needing to define types helps a lot.

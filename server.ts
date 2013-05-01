@@ -93,6 +93,11 @@ process.on('SIGHUP', function() {
   console.log("SIGHUP ignored.");
 });
 
+process.on('uncaughtException', function(err) {
+  console.log("Oh crap, an error:");
+  console.log(err);
+});
+
 
 /********************************************************************
  * listeners

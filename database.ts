@@ -82,7 +82,6 @@ var _ : Lodash = require('./static/lodash.js');
 var sha1 : (s : string) => string = require('sha1');
 import mongo = module('mongodb');
 
-import f = module('foo');
 import util = module('utilities');
 import I = module('interfaces');
 
@@ -153,10 +152,13 @@ var updateItems = function(feed : I.DbFeed, callback ?: Function) {
       }
 
       // try to find exact match in the database
+      util.pp(fpItem.link, "fpItem.link");
       db.items.find(
-        {url: fpItem.link}).toArray(
+        {url: fpItem.link, feedId: feed._id}).toArray(
           function(err, a) {
             util.throwIt(err);
+
+            // util.pp(a, "a");
 
             var dbItem : I.DbItem = {
               title: fpItem.title,
@@ -566,6 +568,7 @@ export var start = function(callback ?: Function) : void {
     // when you're done, call this function
     var after = _.after(_.size(db), function() {
       setInterval(updateEverything, c.UPDATE_INTERVAL);
+      updateEverything();
       callback(null);
     });
 

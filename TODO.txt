@@ -1,7 +1,6 @@
 ========================
 = todo
 ========================
-- have "Brss" at the top
 - when you add a feed, make it obvious which feeds were added (or if they were
   already there)
 - make your subscriptions obvious: "Hi ___, here are your subscriptions"
@@ -16,7 +15,6 @@
 ========================
 = brandon
 ========================
-- bar at the top
 
 ========================
 = endgame
@@ -53,3 +51,5 @@
 - transitions
 - checkboxes/input look nice
 - checkbox on left
+- bar at the top
+- have "Brss" at the top

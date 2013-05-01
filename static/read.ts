@@ -155,6 +155,8 @@ module Read {
 
   export var exitRead = function(callback ?: () => void) : void {
     callback = callback || function() { };
+
+    window.scrollTo(0, 0);
     $("#readBack").css('display', 'none');
     $("#read")
       .addClass("hiddenRight")

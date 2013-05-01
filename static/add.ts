@@ -74,6 +74,7 @@ module Add {
 
   export var exitAdd = function(callback ?: () => void) {
     callback = callback || function() { };
+    window.scrollTo(0, 0);
     $("#searchBox").val("");
     $("#addButton").css('display', 'none');
     $("#add")

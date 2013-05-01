@@ -86,6 +86,7 @@ module View {
   export var exitView = function(callback ?: Function) {
     callback = callback || function() { };
 
+    window.scrollTo(0, 0);
     $("#addSubscription").css('display', 'none');
     $("#editSubscription").css('display', 'none');
 

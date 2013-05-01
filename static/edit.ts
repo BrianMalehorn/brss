@@ -47,6 +47,7 @@ module Edit {
 
   export var exitEdit = function(callback ?: () => void) {
     callback = callback || function() { };
+    window.scrollTo(0, 0);
     $("#saveSubscription").css('display', 'none');
     $("#edit")
       .addClass("hiddenRight")
